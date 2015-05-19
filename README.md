@@ -11,13 +11,16 @@ A healthy, passing test suite is the lifeblood of any large distributed software
 
 This CSE 512 project investigates how visualizations can aid in diagnosing test regressions in the context of [WebKit](https://www.webkit.org), an open-source browser engine with many contributors and large test suite. With presently-deployed tools, investigating test regressions is difficult: WebKit's [existing dashboard for test history](http://webkit-test-results.appspot.com/dashboards/flakiness_dashboard.html) presents a series of a large tables with poor visual encodings, hard to use filters, and other deficiencies. These problems make it difficult to discover when a test started misbehaving, to determine problems are isolated to a specific platform or time range, or to answer other straightforward questions that a developer would ask to diagnose a test regression.
 
+### Screenshot: Existing Dashboard
+
 ![Old dashboard](https://raw.githubusercontent.com/CSE512-15S/fp-burg/master/old-dash.png)
 
 The output of this project is a redesigned dashboard prototype that uses small multiples and compact visual encodings to succinctly present the recent history of multiple tests. The main overview shows a grid of timelines whose contents are determined by the combination of testing platform (column) and test (row). Users can filter visible timelines according to criteria such as test name, file path, platform, expected result, or date range. Timelines are interactive, and more detailed views about the particular test or build run are shown on demand.
 
-![TODO: Our dashboard](https://raw.githubusercontent.com/CSE512-15S/fp-burg/master/old-dash.png)
+### TODO: New Dashboard Mockup
 
-The views are linked: the queue flow diagram can be used as a selection tool to choose a subset of the patch test results. This subset will be displayed in both D3 histograms and a details table below.
+### TODO: New Dashboard Mockup Detail View
+
 
 ## Running Instructions
 
