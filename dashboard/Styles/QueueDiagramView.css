@@ -1,0 +1,154 @@
+/*
+ * Copyright (C) 2015 University of Washington.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS''
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+.queue-attempt .line {
+    stroke-width: 4px;
+    fill: transparent;
+}
+.queue-attempt .line .arrow-head {
+    stroke-width: 2px;
+}
+.queue-attempt .line.outcome.attempt {
+    stroke: #4990E2;
+}
+.queue-attempt .line.outcome.attempt .arrow-head {
+    fill: #4990E2;
+}
+.queue-attempt .line.outcome.abort {
+    stroke: #979797;
+}
+.queue-attempt .line.outcome.abort .arrow-head {
+    fill: #979797;
+}
+.queue-attempt .line.outcome.pass {
+    stroke: #417505;
+}
+.queue-attempt .line.outcome.fail {
+    stroke: #830010;
+}
+.queue-attempt .label rect {
+    stroke: #D3D3D3;
+    stroke-width: 2px;
+    fill: #F6F4EC;
+    fill-opacity: 0.9;
+}
+.queue-attempt .attempt-circle circle {
+    stroke: #979797;
+    stroke-width: 4px;
+    fill: #F6F6F6;
+}
+.queue-attempt .attempt-circle text {
+    font-family: Helvetica;
+    font-size: 36px;
+    font-weight: bold;
+    fill: #4A4A4A;
+}
+
+.queue-start rect,
+.queue-start path,
+.queue-attempt .line path,
+.queue-attempt .label rect,
+.queue-attempt .label text tspan,
+.queue-attempt .attempt-circle circle,
+.queue-attempt .attempt-circle text tspan {
+    cursor: pointer;
+}
+
+.queue-attempt.selected-pass .line.pass,
+.queue-attempt.selected-pass .line.attempt,
+.queue-attempt.selected-fail .line.fail,
+.queue-attempt.selected-fail .line.attempt,
+.queue-attempt.selected-abort .line.abort,
+.queue-attempt.selected-abort .line.attempt,
+.queue-attempt.selected-attempt .line.attempt,
+.queue-attempt.selected-through .line.attempt {
+    stroke: #876E9D;
+}
+
+.queue-attempt.selected-pass .line.pass .arrow-head,
+.queue-attempt.selected-pass .line.attempt .arrow-head,
+.queue-attempt.selected-fail .line.fail .arrow-head,
+.queue-attempt.selected-fail .line.attempt .arrow-head,
+.queue-attempt.selected-abort .line.abort .arrow-head,
+.queue-attempt.selected-abort .line.attempt .arrow-head,
+.queue-attempt.selected-attempt .line.attempt .arrow-head,
+.queue-attempt.selected-through .line.attempt .arrow-head {
+    fill: #876E9D;
+}
+.queue-attempt.selected-pass .line:not(.pass, .attempt),
+.queue-attempt.selected-pass .label:not(.pass, .attempt),
+.queue-attempt.selected-fail .line:not(.fail, .attempt),
+.queue-attempt.selected-fail .label:not(.fail, .attempt),
+.queue-attempt.selected-abort .line:not(.abort, .attempt),
+.queue-attempt.selected-abort .label:not(.abort, .attempt),
+.queue-attempt.selected-through .line:not(.attempt),
+.queue-attempt.selected-through .label:not(.attempt),
+.queue-attempt.selected-ignore .label,
+.queue-attempt.selected-ignore .line,
+.queue-attempt.selected-ignore .attempt-circle {
+    opacity: 0.5;
+}
+.queue-attempt.selected-pass .label.pass rect,
+.queue-attempt.selected-pass .label.attempt rect,
+.queue-attempt.selected-fail .label.fail rect,
+.queue-attempt.selected-abort .label.abort rect,
+.queue-attempt.selected-abort .label.attempt rect,
+.queue-attempt.selected-fail .label.attempt rect,
+.queue-attempt.selected-attempt .label.attempt rect,
+.queue-attempt.selected-through .label.attempt rect {
+    stroke: #876E9D;
+    fill: #E6DAF1;
+}
+
+.queue-attempt.selected-pass .attempt-circle circle,
+.queue-attempt.selected-fail .attempt-circle circle,
+.queue-attempt.selected-abort .attempt-circle circle,
+.queue-attempt.selected-through .attempt-circle circle,
+.queue-attempt.selected-attempt .attempt-circle circle {
+    stroke: #876E9D;
+    fill: #EBEBEB;
+}
+.queue-attempt.selected-pass .attempt-circle text,
+.queue-attempt.selected-fail .attempt-circle text,
+.queue-attempt.selected-abort .attempt-circle text,
+.queue-attempt.selected-through .attempt-circle text,
+.queue-attempt.selected-attempt .attempt-circle text {
+    fill: #5C4375;
+}
+
+.queue-attempt.empty-attempt {
+    display: none !important;
+}
+
+.queue-attempt.empty-pass .label.pass,
+.queue-attempt.empty-pass .line.pass,
+.queue-attempt.empty-fail .label.fail,
+.queue-attempt.empty-fail .line.fail,
+.queue-attempt.empty-abort .label.abort,
+.queue-attempt.empty-abort .line.abort {
+    -webkit-filter: grayscale(100%);
+    opacity: 0.3 !important;
+    pointer-events: none;
+}

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>WebKit Bot Watcher's Dashboard: Pipeline Metrics</title>
+    <link rel="stylesheet" href="Styles/Main.css"></link>
+    <link rel="stylesheet" href="Styles/Pipeline.css"></link>
+    <link rel="stylesheet" href="Styles/BuildAttemptTableView.css"></link>
+    <link rel="stylesheet" href="Styles/QueueDiagramView.css"></link>
+    <link rel="stylesheet" href="External/daterangepicker.css"></link>
+
+    <script src="External/underscore-min.js"></script>
+    <script src="External/jquery-1.11.1.min.js"></script>
+    <script src="External/moment.min.js"></script>
+    <script src="External/jquery.daterangepicker.js"></script>
+    <script src="External/d3.min.js"></script>
+    <script src="External/d3.tip.v0.6.3.js"></script>
+
+    <script>
+        window.WK = {};
+    </script>
+    <script src="Scripts/Utilities.js"></script>
+    <script src="Models/Object.js"></script>
+    <script src="Models/DummyData.js"></script>
+    <script src="Models/Platform.js"></script>
+
+    <script src="Models/TracDataSource.js"></script>
+    <script src="Models/Patch.js"></script>
+    <script src="Models/PatchAttempt.js"></script>
+    <script src="Models/PatchResult.js"></script>
+    <script src="Models/PatchQueue.js"></script>
+    <script src="Models/PatchQueueMetrics.js"></script>
+    <script src="Models/PatchQueueDataSource.js"></script>
+    <script src="Views/QueueDiagramView.js"></script>
+    <script src="Views/OutcomeHistogramsView.js"></script>
+    <script src="Views/BuildAttemptTableView.js"></script>
+    <script src="Controllers/PipelineViewController.js"></script>
+</head>
+<body>
+<!--
+    cleanup regex
+    - kill sketch       sketch:\w*="\w*"
+    - kill ids          id="\S*"
+    - kill multispace   (?<=\S)  +
+-->
+<div id="content">
+
+<h1>Patch Processing Pipelines by Queue</h1>
+
+<div class="date-selection">
+<span class="date-label">Showing Patches in Range:</span>
+</div>
+<ul class="status-messages">
+</ul>
+<hr />
+
+<div class="queue-container">
+<div class="legend">
+<svg width="145px" height="212px" viewBox="0 0 145 210" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g transform="translate(1, 0)">
+    <rect stroke="#D3D3D3" stroke-width="2" fill-opacity="0.9" fill="#F6F4EC" x="0" y="0" width="138" height="201"></rect>
+    <g transform="translate(16, 15)">
+        <g transform="translate(17, 13) rotate(90) translate(-17, -13) translate(5, -3.50)" stroke="#417505" fill="transparent" stroke-width="4" >
+            <path d="M11.6177078,33 L11.6177079,0.0674695235 L0.98959976,0.0674695235 L16.2685848,0.0674695235 L23.0104002,0.0674695235" ></path>
+        </g>
+        <text font-family="Helvetica Neue" font-size="14" font-weight="420" fill="#7D7D7D">
+            <tspan text-anchor="middle" x="76" y="19">PASS</tspan>
+        </text>
+    </g>
+    <g transform="translate(17, 53)">
+        <g transform="translate(17, 11.50) rotate(-90) translate(-17, -11.50) translate(6, -5)" stroke="#830010" fill="transparent" stroke-width="4" >
+            <path d="M10.6495655,32.9120852 L10.6495656,3.55271368e-15 L0.907133113,4.37819587e-15 L14.9128694,4.37819587e-15 L21.0928669,4.37819587e-15" transform="translate(11, 16.456043) scale(1, -1) translate(-11, -16.456043) "></path>
+        </g>
+        <text font-family="Helvetica Neue" font-size="14" font-weight="420" fill="#7D7D7D">
+            <tspan text-anchor="middle" x="76" y="17">FAIL</tspan>
+        </text>
+    </g>
+    <g transform="translate(14, 92)">
+        <g transform="translate(0, 3.25)" stroke="#4990E2" >
+            <path d="M37.0840353,4.10048647 C36.5821509,2.96042324 35.580269,0.684582625 35.580269,0.684582625 C35.3567284,0.176795574 34.9807441,0.161576744 34.735521,0.660693 L29.7616312,10.7843282 C29.5186304,11.2789214 29.770481,11.6798684 30.3261796,11.6798684 L39.4161285,11.6798683 C39.9709208,11.6798683 40.2387477,11.2666225 40.0144177,10.7570423 C40.0144177,10.7570423 38.0619567,6.3218991 37.0840353,4.10048647 Z" fill="#4990E2" transform="translate(34.881407, 5.987388) rotate(91) translate(-34.881407, -5.987388) "></path>
+            <path d="M1.39796145,6 L31.5973985,6" stroke-width="4"></path>
+        </g>
+        <text font-family="Helvetica Neue" font-size="14" font-weight="420" fill="#7D7D7D">
+            <tspan text-anchor="middle" x="76" y="14.75">TRY</tspan>
+        </text>
+    </g>
+    <g transform="translate(16, 129)">
+        <g transform="translate(20.50, 9) scale(-1, 1) translate(-20.50, -9) translate(0, 3)" stroke="#9B9B9B" >
+            <path d="M37.0840353,4.10048647 C36.5821509,2.96042324 35.580269,0.684582625 35.580269,0.684582625 C35.3567284,0.176795574 34.9807441,0.161576744 34.735521,0.660693 L29.7616312,10.7843282 C29.5186304,11.2789214 29.770481,11.6798684 30.3261796,11.6798684 L39.4161285,11.6798683 C39.9709208,11.6798683 40.2387477,11.2666225 40.0144177,10.7570423 C40.0144177,10.7570423 38.0619567,6.3218991 37.0840353,4.10048647 Z" fill="#9B9B9B" transform="translate(34.881407, 5.987388) rotate(91) translate(-34.881407, -5.987388) "></path>
+            <path d="M1.39796145,6 L31.5973985,6" stroke-width="4"></path>
+        </g>
+        <text font-family="Helvetica Neue" font-size="14" font-weight="420" fill="#7D7D7D">
+            <tspan text-anchor="middle" x="76" y="14.5">ABORT</tspan>
+        </text>
+    </g>
+    <g transform="translate(25, 160)">
+        <text font-family="Helvetica Neue" font-size="14" font-weight="420" fill="#7D7D7D">
+            <tspan text-anchor="middle" x="68" y="17.5">TRY #</tspan>
+        </text>
+        <g >
+            <circle stroke="#979797" stroke-width="1.60000002" fill="#F6F6F6" cx="13" cy="13" r="13"></circle>
+            <text font-family="Helvetica" font-size="14.4000002" font-weight="bold" fill="#4A4A4A">
+                <tspan x="8.9375" y="17.65625">1</tspan>
+            </text>
+        </g>
+    </g>
+</g>
+</svg>
+</div>
+</div>
+
+<div class="details">
+<h2>Processing Times by Queue Outcome</h2>
+<hr />
+</div>
+</div>
+
+<!-- These templates are used to generate the diagram and table rows. -->
+<script type="text/template" id="BuildAttemptTableView-row">
+<tr>
+<td><span class="try-num"><%- attempt.ordinal %></span></td>
+<td><img src="Images/<%= attempt.outcome %>.svg" alt="arrow <%= attempt.outcome %>"></td>
+<td><a href="<%= attempt.patchURL %>">Patch #<%- attempt.patchId %></a></td>
+<td><%- attempt.waitDuration %></td>
+<td><%- attempt.processDuration %></td>
+</tr>
+</script>
+
+<script type="text/template" id="QueueDiagramView-start">
+<div class="queue-item queue-start">
+<span class="queue-label"><%- summary.name %></span>
+<svg width="146px" height="270px" viewBox="0 0 146 270" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g transform="translate(1, 107)" stroke="#979797" stroke-width="4">
+        <rect fill="#D8D8D8" x="0.771953909" y="0" width="142.456092" height="52"></rect>
+        <path d="M21,5.59383155 L21,47.7669085" stroke-linecap="square" ></path>
+        <path d="M41,5.59383155 L41,47.7669085" stroke-linecap="square" ></path>
+        <path d="M61,5.59383155 L61,47.7669085" stroke-linecap="square" ></path>
+        <path d="M82,5.59383155 L82,47.7669085" stroke-linecap="square" ></path>
+        <path d="M102,5.59383155 L102,47.7669085" stroke-linecap="square" ></path>
+        <path d="M122,5.59383155 L122,47.7669085" stroke-linecap="square" ></path>
+    </g>
+</svg>
+</div>
+</script>
+
+<script type="text/template" id="QueueDiagramView-attempt">
+<div class="queue-item queue-attempt">
+<svg width="191px" height="270px" viewBox="0 0 191 270" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- pass line -->
+    <g class="outcome pass line" transform="translate(146, 50)">
+        <path d="M11.6177078,52 L11.6177079,0.106315613 L0.98959976,0.106315613 L16.2685848,0.106315613 L23.0104002,0.106315613" ></path>
+    </g>
+    <!-- fail line -->
+    <g class="outcome fail line" transform="translate(146, 166)">
+        <path d="M11.6177078,51.8936844 L11.6177079,7.10542736e-15 L0.98959976,8.40699522e-15 L16.2685848,8.40699522e-15 L23.0104002,8.40699522e-15" transform="translate(12, 25.946842) scale(1, -1) translate(-12, -25.946842) "></path>
+    </g>
+    <!-- abort line -->
+    <g class="outcome abort line" transform="translate(88, 155)">
+        <path d="M37.5595972,0.650981549 C45.6827916,5.02429358 53.2284229,14.1092189 45.8063474,22.1841615 C38.3842719,30.2591041 8.28363611,39.3434157 8.28363611,39.3434157"></path>
+        <path class="arrow-head" d="M8.08769176,34.0883591 C7.86635346,33.5805994 7.43467643,33.5427764 7.12944456,33.995091 L0.662997921,43.577537 C0.35511091,44.0337862 0.54964366,44.4036492 1.10561167,44.4036492 L11.5841533,44.4036491 C12.1364891,44.4036491 12.4041394,43.9904773 12.1834773,43.4842689 L8.08769176,34.0883591 Z" transform="translate(6.394867, 39.082669) rotate(3) translate(-6.394867, -39.082669) "></path>
+    </g>
+    <!-- attempt line -->
+    <g class="outcome attempt line" transform="translate(-1, 128)">
+        <path class="arrow-head" d="M110.572612,0.673767889 C110.350113,0.16834785 109.974974,0.155047863 109.729751,0.654164119 L104.755861,10.7777993 C104.51286,11.2723925 104.764711,11.6733395 105.320409,11.6733395 L114.410358,11.6733394 C114.965151,11.6733394 115.234348,11.263208 115.012029,10.7581955 L110.572612,0.673767889 Z" transform="translate(109.875314, 5.986958) rotate(91) translate(-109.875314, -5.986958) "></path>
+        <path d="M0.643792344,6 L106.597398,6"></path>
+    </g>
+    <!-- pass label -->
+    <g class="outcome pass label" transform="translate(128, 10)">
+        <rect x="0" y="0.3625" width="58" height="32.075" rx="8"></rect>
+        <text font-family="Helvetica Neue" font-size="10.875" font-weight="bold" fill="#4A4A4A">
+            <tspan class="label-title" text-anchor="middle" x="29" y="14"><%= summary.pass.percentString %></tspan>
+        </text>
+        <text font-family="Helvetica Neue" font-size="7.25" font-weight="normal" fill="#9B9B9B">
+            <tspan class="label-detail" text-anchor="middle" x="29" y="25.075"><%= summary.pass.count %></tspan>
+        </text>
+    </g>
+    <!-- fail label -->
+    <g class="outcome fail label" xmlns="http://www.w3.org/2000/svg" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" transform="translate(128, 224)">
+        <rect x="0" y="0.3625" width="58" height="32.075" rx="8"/>
+        <text font-family="Helvetica Neue" font-size="10.875" font-weight="bold" fill="#4A4A4A">
+            <tspan class="label-title" text-anchor="middle" x="29" y="14"><%= summary.fail.percentString %></tspan>
+        </text>
+        <text font-family="Helvetica Neue" font-size="7.25" font-weight="normal" fill="#9B9B9B">
+            <tspan class="label-detail" text-anchor="middle" x="29" y="25.075"><%= summary.fail.count %></tspan>
+        </text>
+    </g>
+    <!-- abort label -->
+    <g class="outcome abort label" xmlns="http://www.w3.org/2000/svg" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" transform="translate(23, 194)">
+        <rect x="0" y="0.3625" width="58" height="32.075" rx="8"/>
+        <text font-family="Helvetica Neue" font-size="10.875" font-weight="bold" fill="#4A4A4A">
+            <tspan class="label-title" text-anchor="middle" x="29" y="14"><%= summary.abort.percentString %></tspan>
+        </text>
+        <text font-family="Helvetica Neue" font-size="7.25" font-weight="normal" fill="#9B9B9B">
+            <tspan class="label-detail" text-anchor="middle" x="29" y="25.075"><%= summary.abort.count %></tspan>
+        </text>
+    </g>
+    <!-- attempt label -->
+    <g class="outcome attempt label" xmlns="http://www.w3.org/2000/svg" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" transform="translate(22, 117)">
+        <rect x="0" y="0.3625" width="58" height="32.075" rx="8"/>
+        <text font-family="Helvetica Neue" font-size="10.875" font-weight="bold" fill="#4A4A4A">
+            <tspan class="label-title" text-anchor="middle" x="29" y="14"><%= summary.retry.percentString %></tspan>
+        </text>
+        <text font-family="Helvetica Neue" font-size="7.25" font-weight="normal" fill="#9B9B9B">
+            <tspan class="label-detail" text-anchor="middle" x="29" y="25.075"><%= summary.retry.count %></tspan>
+        </text>
+    </g>
+    <!-- attempt number circle -->
+    <g class="attempt-circle" transform="translate(125, 102)">
+        <circle cx="32" cy="32" r="32"></circle>
+        <text>
+            <tspan text-anchor="middle" x="32" y="44"><%= summary.ordinalString %></tspan>
+        </text>
+    </g>
+</svg>
+</div>
+</script>
+
+<script type="text/javascript">
+// Underscore template functions
+WK.ViewTemplates = {
+    queueDiagramStart: _.template($('#QueueDiagramView-start').html(), {'variable': 'summary'}),
+    queueDiagramAttempt: _.template($('#QueueDiagramView-attempt').html(), {'variable': 'summary'}),
+    buildAttemptTableRow: _.template($('#BuildAttemptTableView-row').html(), {'variable': 'attempt'})
+};
+
+document.addEventListener("DOMContentLoaded", function() {
+    var app = window.dashboardApp = new WK.PipelineViewController();
+    app.setDateRange(moment().subtract(2, 'days').toDate(), moment().toDate());
+});
+</script>
+</body>
+</html>
