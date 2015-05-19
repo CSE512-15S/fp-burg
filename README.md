@@ -1,71 +1,28 @@
-a3-adityas-burg-aburner
+fp-burg
 ===============
 
 ## Team Members
 
-1. Aditya Sankar adityas@uw.edu
-2. Brian Burg burg@uw.edu
-3. Alex Burner aburner@uw.edu
+1. Brian Burg burg@uw.edu
 
-## Project: Patch Pipeline
+## Project: Test History
 
-Our visualization is an exploratory tool for analyzing data from bots running WebKit patch tests. The current dashboard for the tests is a large table of text. It provides accurate data, but it is difficult to read and doesn't provide insight into the form of the test process:
+A healthy, passing test suite is the lifeblood of any large distributed software project. A developer can use accurate, robust tests to detect failure-inducing changes before faulty code is ever committed or shipped to customers. Despite everyone's best attempts, sometimes a test may regress: to unexpectedly no longer pass. Most regressions are caused by code changes, but in other cases, the test itself is unreliable due to nondeterminism, logic errors, or other unforeseen conditions. To ensure high test suite quality, a developer must diagnose test regressions by looking through thousands of historical test results for clues as to whether the code or the test are at fault.
 
-![Old dashboard](https://raw.githubusercontent.com/CSE512-15S/a3-adityas-burg-aburner/master/old-dash.png)
+This CSE 512 project investigates how visualizations can aid in diagnosing test regressions in the context of [WebKit](https://www.webkit.org), an open-source browser engine with many contributors and large test suite. With presently-deployed tools, investigating test regressions is difficult: WebKit's [existing dashboard for test history](http://webkit-test-results.appspot.com/dashboards/flakiness_dashboard.html) presents a series of a large tables with poor visual encodings, hard to use filters, and other deficiencies. These problems make it difficult to discover when a test started misbehaving, to determine problems are isolated to a specific platform or time range, or to answer other straightforward questions that a developer would ask to diagnose a test regression.
 
-Our visualization is designed to graphically represent the testing process, showing the flow of patch test attempts as the come from the queue and are run by bots multiple times against system builds. The different outcomes (pass, fail, abort, and retry) are represented by arrows, which we label with percentages from the patch test data:
+![Old dashboard](https://raw.githubusercontent.com/CSE512-15S/fp-burg/master/old-dash.png)
 
-![Our dashboard](https://raw.githubusercontent.com/CSE512-15S/a3-adityas-burg-aburner/master/our-dash.png)
+The output of this project is a redesigned dashboard prototype that uses small multiples and compact visual encodings to succinctly present the recent history of multiple tests. The main overview shows a grid of timelines whose contents are determined by the combination of testing platform (column) and test (row). Users can filter visible timelines according to criteria such as test name, file path, platform, expected result, or date range. Timelines are interactive, and more detailed views about the particular test or build run are shown on demand.
+
+![TODO: Our dashboard](https://raw.githubusercontent.com/CSE512-15S/fp-burg/master/old-dash.png)
 
 The views are linked: the queue flow diagram can be used as a selection tool to choose a subset of the patch test results. This subset will be displayed in both D3 histograms and a details table below.
 
 ## Running Instructions
 
-Access our visualization at http://cse512-15s.github.io/a3-adityas-burg-aburner/ or download this repository and open `dashboard/pipeline.html`.
+Access our visualization at http://cse512-15s.github.io/fp-burg/ or download this repository and open `dashboard/testhistory.html`.
 
-To use the visualization:
+Some things to try out in the visualization:
 
-1. Select a date range at the top of the page
-2. Wait for test results data to load from API
-3. Use the queue flow diagram to select a test outcome
-4. View detailed breakdowns of the test outcomes in the histogram and table
-
-
-## Story Board
-
-[Our storyboard PDF is here](https://github.com/CSE512-15S/a3-adityas-burg-aburner/raw/master/artboards.pdf)
-
-
-### Changes between Storyboard and the Final Implementation
-
-1. In our initial storyboard, we planned to display all queue data in the histograms and tables, and then selecting specific outcomes in the queue flow diagram would filter the data down to a subset. However, this amount of data became prohibitive to work with, and so now the visualization starts with no histogram or table data and the user must make a selection from the diagram to populate them.
-
-2. At first we planned to include Author and Bug Description columns in the patch results details table. However these would require separate XML API calls per each patch. We decided this would take too long to load, and so those columns are left out of our final submission. (This data depends on an upgrade of the WebKit project's Bugzilla bug tracker.)
-
-3. We wanted to be able to select ranges in the histogram, updating the details table (linking and brushing). However we did not have time to complete this complex of an interaction task.
-
-4. Breaking news: the histogram and table always show all of the data for a selected queue (instead of filtering by the specific outcome chosen). We ran out of time to complete our data filtering.
-
-
-## Development Process
-
-### Brian
- - identified the target domain and data
- - created the initial storyboard and mockups
- - designed the data model and selection model
- - misc.
-
-### Alex
- - converted mockup to real HTML + SVG
- - implemented the attempts table
- - worked on first version of diagram selection model
- - project documentation
-
-### Aditya
- - created and linked histogram views
- - added tooltip interaction and processing time summaries
-
-### Overall
- - our application took roughly 25 man hours to complete
- - gathering and formatting the data took the most time
- - user events and view linking took a lot of time too
+1. TODO
