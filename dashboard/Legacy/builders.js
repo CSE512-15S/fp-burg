@@ -54,7 +54,7 @@ builders._loadScript = function(url, success, error)
 
 builders._requestBuilders = function()
 {
-    var buildersUrl = 'builders.jsonp';
+    var buildersUrl = 'Legacy/builders.jsonp';
     builders._loadScript(buildersUrl, function() {}, function() {
         console.error('Could not load ' + buildersUrl);
     });
