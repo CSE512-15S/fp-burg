@@ -17,10 +17,13 @@ This CSE 512 project investigates how visualizations can aid in diagnosing test 
 
 The output of this project is a redesigned dashboard prototype that uses small multiples and compact visual encodings to succinctly present the recent history of multiple tests. The main overview shows a grid of timelines whose contents are determined by the combination of testing platform (column) and test (row). Users can filter visible timelines according to criteria such as test name, file path, platform, expected result, or date range. Timelines are interactive, and more detailed views about the particular test or build run are shown on demand.
 
-### TODO: New Dashboard Mockup
+### New Dashboard: Single Test+Platform History
 
-### TODO: New Dashboard Mockup Detail View
+![Single Timeline](https://raw.githubusercontent.com/CSE512-15S/fp-burg/master/Mockups/Timeline.png)
 
+### New Dashboard: Grid View
+
+![Grid View](https://raw.githubusercontent.com/CSE512-15S/fp-burg/master/Mockups/Grid.png)
 
 ## Running Instructions
 
