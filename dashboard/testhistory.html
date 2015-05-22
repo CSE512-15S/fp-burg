@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>WebKit Build Dashboard: Test History</title>
+    <link rel="stylesheet" href="Styles/TestHistory.css"></link>
+
+    <script src="External/underscore-min.js"></script>
+
+    <script>
+        window.WK = {};
+    </script>
+    <script src="Models/Utilities.js"></script>
+    <script src="Models/Object.js"></script>
+
+    <script src="Controllers/TestResultsOverviewController.js"></script>
+</head>
+<body>
+
+<div id="content"></div>
+
+<script type="text/javascript">
+document.addEventListener("DOMContentLoaded", function() {
+    var app = window.dashboardApp = new WK.TestResultsOverviewController();
+});
+</script>
+</body>
+</html>
