@@ -42,10 +42,7 @@ JSON.load = function(url, successCallback, failureCallback, options)
     if (!_.isFunction(successCallback))
         return;
 
-    if (_.isObject(failureCallback))
-        options = failureCallback;
-
-    if (_.isFunction(failureCallback))
+    if (!_.isFunction(failureCallback))
         failureCallback = function() { };
 
     if (!_.isObject(options))
@@ -65,8 +62,16 @@ JSON.load = function(url, successCallback, failureCallback, options)
 
         try {
             var responseText = request.responseText;
-            if (_.has(options, "jsonpCallbackName"))
-                responseText = responseText.replace(new RegExp("^" + options.jsonpCallbackName + "\\((.*)\\);?$"), "$1");
+            if (_.has(options, "jsonpCallbackName")) {
+                // Trim single-line comments and something that looks like a call to 'jsonpCallbackName'.
+                responseText = responseText.replace(new RegExp("^\s*//.*\\n", "gm"), '');
+                var trimLeading = new RegExp("^" + options.jsonpCallbackName + "\\(");
+                var trimTrailing = new RegExp("\\);?\\s*$");
+                var leadingMatch = responseText.match(trimLeading);
+                var trailingMatch = responseText.match(trimTrailing);
+                if (leadingMatch && trailingMatch)
+                    responseText = responseText.slice(leadingMatch[0].length, trailingMatch.index);
+            }
             var data = JSON.parse(responseText);
         } catch (e) {
             var data = {errorType: JSON.ParseError, error: e.message};

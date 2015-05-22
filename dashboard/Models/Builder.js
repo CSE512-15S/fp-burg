@@ -23,40 +23,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WK.TestResultsOverviewController = function() {
-    WK.Object.call(this);
+var WK = WK || {};
 
-    // First, set up data sources.
-    // this._resultsDataSource = new WK.TestResultDataSource("https://webkit-test-results.appspot.com/", "../data/");
-    this._builderListDataSource = new WK.BuilderListDataSource("./Legacy/builders.jsonp");
-    this._builderListDataSource.loadBuilders()
-        .then(this._buildersListLoaded.bind(this));
-
-    // Build the UI skeleton.
-    this.element = document.getElementById("content");
-    var headerElement = document.createElement("h1");
-    headerElement.textContent = "Test Results History";
-    this.element.appendChild(headerElement);
-
-    // Set up initial view state.
-
+WK.Builder = function(name)
+{
+    console.assert(name);
+    this.name = name;
 }
-
-WK.TestResultsOverviewController.prototype = {
-    __proto__: WK.Object.prototype,
-    constructor: WK.TestResultsOverviewController,
-
-    // Public
-
-    // Private
-
-    this._buildersListLoaded: function(builders)
-    {
-        this._builders = builders;
-        console.log("Loaded builders: ", builders);
-
-        _.each(builders, function(builder) {
-            //this._resultsDataSource.fetchResultsForBuilder(builder);
-        }, this);
-    }
-};
