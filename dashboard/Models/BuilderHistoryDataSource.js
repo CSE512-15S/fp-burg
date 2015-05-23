@@ -27,14 +27,35 @@
 
 var WK = WK || {};
 
-WK.TestResultDataSource = function(serverURL)
+WK.BuilderHistoryDataSource = function(serverURL)
 {
     console.assert(serverURL);
 
     this._serverURL = serverURL;
+    this._resultsCache = new Map;
 }
 
-WK.TestResultDataSource.prototype = {
+WK.BuilderHistoryDataSource.prototype = {
+
+    // Public
+
+    fetchHistoryForBuilder: function(builder)
+    {
+        console.assert(builder instanceof WK.Builder, builder);
+
+        if (this._resultsCache.has(builder))
+            return this._resultsCache.get(builder);
+
+        var result = new Promise(function(resolve, reject) {
+            console.log("Loading results for builder: " + builder.name);
+
+            JSON.load(this.resultsURLForBuilder(builder), resolve, reject);
+        }.bind(this))
+        .then(this._processResultsPayloadForBuilder.bind(this, builder));
+
+        this._resultsCache.set(builder, result);
+        return result;
+    },
 
     resultsURLForBuilder: function(builder)
     {
@@ -42,11 +63,70 @@ WK.TestResultDataSource.prototype = {
 
         const magicMasterString = "webkit.org";
         const magicTestTypeString = "layout-tests";
+        const resultsFilename = "results-small.json"; // results.json?
 
-        return this._serverURL + 'testfile?builder=' + builder.name +
+        return this._serverURL + 'testfile' +
+               '?builder=' + builder.name +
                '&master=' + magicMasterString +
-               '&testtype=' + magicTestTypeString + '&name=';
-    }
+               '&testtype=' + magicTestTypeString +
+               '&name=' + resultsFilename;
+    },
+
+    // Private
+
+    _processResultsPayloadForBuilder: function(builder, payload)
+    {
+        recursivelyFlattenObjectTrie = function(objectTrie, prefix) {
+            var resultsByTestName = new Map;
+            for (var part in objectTrie) {
+                var fullName = prefix ? prefix + "/" + part : part;
+                var data = objectTrie[part];
+
+                if ("results" in data) {
+                    resultsByTestName.set(fullName, data);
+                    continue;
+                }
+
+                recursivelyFlattenObjectTrie(data, fullName)
+                    .forEach(function(value, key) {
+                        resultsByTestName.set(key, value);
+                    });
+            }
+            return resultsByTestName;
+        }
+
+        console.log(payload);
+
+        if (!_.has(payload, builder.name)) {
+            console.error("Mismatch between builder and payload: ", builder, payload);
+            throw new Error("Mismatch between builder and payload.");
+        }
+
+        if (!_.has(payload, "version") || parseInt(payload.version) < 4) {
+            console.error("Missing or unknown payload version: ", payload.version);
+            throw new Error("Missing or unknown payload version.");
+        }
+
+        var builderPayload = payload[builder.name];
+        var buildCount = builderPayload.buildNumbers.length;
+
+        builderRuns = [];
+        for (var i = 0; i < buildCount; ++i) {
+            var timestamp = builderPayload.secondsSinceEpoch[i];
+            var buildNumber = builderPayload.buildNumbers[i];
+            var revision = builderPayload.webkitRevision[i];
+            builderRuns.push(new WK.BuilderRun(builder, buildNumber, revision, timestamp));
+        }
+        console.log("builder runs:", builderRuns);
+
+        var testResults = recursivelyFlattenObjectTrie(builderPayload.tests);
+        console.log("results:", testResults);
+
+        var history = WK.BuilderHistory.fromPayload(builder, builderRuns, testResults);
+        console.log("builder history:", history);
+        return history;
+    },
+
 };
 
 (function() {
@@ -54,95 +134,7 @@ WK.TestResultDataSource.prototype = {
 loader = {}; // Kill me.
 loader.Loader = function() {} // now.
 
-// TODO(aboxhall): figure out whether this is a performance bottleneck and
-// change calling code to understand the trie structure instead if necessary.
-loader.Loader._flattenTrie = function(trie, prefix)
-{
-    var result = {};
-    for (var name in trie) {
-        var fullName = prefix ? prefix + "/" + name : name;
-        var data = trie[name];
-        if ("results" in data)
-            result[fullName] = data;
-        else {
-            var partialResult = loader.Loader._flattenTrie(data, fullName);
-            for (var key in partialResult) {
-                result[key] = partialResult[key];
-            }
-        }
-    }
-    return result;
-}
-
 loader.Loader.prototype = {
-    load: function()
-    {
-        this._loadNext();
-    },
-    showErrors: function() 
-    {
-        this._errors.show();
-    },
-    _loadNext: function()
-    {
-        var loadingStep = this._loadingSteps.shift();
-        if (!loadingStep) {
-            this._addErrors();
-            this._history.initialize();
-            return;
-        }
-        loadingStep.apply(this);
-    },
-    _loadBuildersList: function()
-    {
-        loadBuildersList(currentBuilderGroupName(), this._history.crossDashboardState.testType);
-        this._loadNext();
-    },
-    _loadResultsFiles: function()
-    {
-        for (var builderName in currentBuilders())
-            this._loadResultsFileForBuilder(builderName);
-    },
-    _loadResultsFileForBuilder: function(builderName)
-    {
-        var resultsFilename;
-        if (history.isTreeMap())
-            resultsFilename = 'times_ms.json';
-        else if (this._history.crossDashboardState.showAllRuns)
-            resultsFilename = 'results.json';
-        else
-            resultsFilename = 'results-small.json';
-
-        var resultsFileLocation = pathToBuilderResultsFile(builderName) + resultsFilename;
-        loader.request(resultsFileLocation,
-                partial(function(loader, builderName, xhr) {
-                    loader._handleResultsFileLoaded(builderName, xhr.responseText);
-                }, this, builderName),
-                partial(function(loader, builderName, xhr) {
-                    loader._handleResultsFileLoadError(builderName);
-                }, this, builderName));
-    },
-    _handleResultsFileLoaded: function(builderName, fileData)
-    {
-        if (history.isTreeMap())
-            this._processTimesJSONData(builderName, fileData);
-        else
-            this._processResultsJSONData(builderName, fileData);
-
-        // We need this work-around for webkit.org/b/50589.
-        if (!g_resultsByBuilder[builderName]) {
-            this._handleResultsFileLoadError(builderName);
-            return;
-        }
-
-        this._handleResourceLoad();
-    },
-    _processTimesJSONData: function(builderName, fileData)
-    {
-        // FIXME: We should probably include the builderName in the JSON
-        // rather than relying on only loading one JSON file per page.
-        g_resultsByBuilder[builderName] = JSON.parse(fileData);
-    },
     _processResultsJSONData: function(builderName, fileData)
     {
         var builds = JSON.parse(fileData);
@@ -168,33 +160,7 @@ loader.Loader.prototype = {
             g_resultsByBuilder[builderName] = builds[builderName];
         }
     },
-    _handleResultsFileLoadError: function(builderName)
-    {
-        console.error('Failed to load results file for ' + builderName + '.');
 
-        // FIXME: loader shouldn't depend on state defined in dashboard_base.js.
-        this._buildersThatFailedToLoad.push(builderName);
-
-        // Remove this builder from builders, so we don't try to use the
-        // data that isn't there.
-        delete currentBuilders()[builderName];
-
-        // Proceed as if the resource had loaded.
-        this._handleResourceLoad();
-    },
-    _handleResourceLoad: function()
-    {
-        if (this._haveResultsFilesLoaded())
-            this._loadNext();
-    },
-    _haveResultsFilesLoaded: function()
-    {
-        for (var builder in currentBuilders()) {
-            if (!g_resultsByBuilder[builder])
-                return false;
-        }
-        return true;
-    },
     _loadExpectationsFiles: function()
     {
         if (!isFlakinessDashboard() && !this._history.crossDashboardState.useTestData) {
@@ -228,14 +194,6 @@ loader.Loader.prototype = {
                         console.error('Could not load expectations file for ' + platformName);
                     }, platformWithExpectations));
     },
-    _addErrors: function()
-    {
-        if (this._buildersThatFailedToLoad.length)
-            this._errors.addError('ERROR: Failed to get data from ' + this._buildersThatFailedToLoad.toString() +'.');
-
-        if (this._staleBuilders.length)
-            this._errors.addError('ERROR: Data from ' + this._staleBuilders.toString() + ' is more than 1 day stale.');
-    }
 }
 
 })();

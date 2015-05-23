@@ -23,44 +23,21 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WK.TestResultsOverviewController = function() {
-    WK.Object.call(this);
+var WK = WK || {};
 
-    // First, set up data sources.
-    this._builderHistoryDataSource = new WK.BuilderHistoryDataSource("https://webkit-test-results.appspot.com/");
-    this._builderListDataSource = new WK.BuilderListDataSource("./Legacy/builders.jsonp");
-    this._builderListDataSource.loadBuilders()
-        .then(this._buildersListLoaded.bind(this));
-
-    // Build the UI skeleton.
-    this.element = document.getElementById("content");
-    var headerElement = document.createElement("h1");
-    headerElement.textContent = "Test Results History";
-    this.element.appendChild(headerElement);
-
-    // Set up initial view state.
-
+WK.BuilderHistory = function(builder, runs, resultsByTest)
+{
+    this.builder = builder;
+    this.runs = runs;
+    this.resultsByTest = resultsByTest;
 }
 
-WK.TestResultsOverviewController.prototype = {
-    __proto__: WK.Object.prototype,
-    constructor: WK.TestResultsOverviewController,
+WK.BuilderHistory.fromPayload = function(builder, runs, resultsMap)
+{
+    var resultsByTest = new Map;
+    resultsMap.forEach(function(resultsPayload, testName) {
+        resultsByTest.set(testName, WK.TestResultHistory.fromPayload(resultsPayload, runs));
+    });
 
-    // Public
-
-    // Private
-
-    _buildersListLoaded: function(builders)
-    {
-        this._builders = builders;
-        console.log("Loaded builders: ", builders);
-
-        console.log("Noodling around with builder: ", builders[0]);
-
-        this._builderHistoryDataSource.fetchHistoryForBuilder(builders[0]);
-
-        _.each(builders, function(builder) {
-            //this._builderHistoryDataSource.fetchResultsForBuilder(builder);
-        }, this);
-    }
-};
+    return new WK.BuilderHistory(builder, runs, resultsByTest);
+}
