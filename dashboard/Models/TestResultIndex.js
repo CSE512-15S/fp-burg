@@ -25,20 +25,42 @@
 
 var WK = WK || {};
 
-WK.BuilderHistory = function(builder, runs, resultsByTest)
+WK.TestResultIndex = function()
 {
-    this.builder = builder;
-    this.runs = runs;
-    this.resultsByTest = resultsByTest;
+    this.testsByName = new Map;
+
+    // Allows lookup by Test and Builder:
+    // Map(Test -> Map(Builder -> TestResultHistory))
+    this.resultsByTest = new Map;
 }
 
-WK.BuilderHistory.fromPayload = function(builder, runs, testIndex, resultsMap)
-{
-    var resultsByTest = new Map;
-    resultsMap.forEach(function(resultsPayload, testName) {
-        var test = testIndex.findTest(testName);
-        resultsByTest.set(test, WK.TestResultHistory.fromPayload(resultsPayload, runs));
-    });
 
-    return new WK.BuilderHistory(builder, runs, resultsByTest);
+WK.TestResultIndex.prototype = {
+    __proto__: WK.Object,
+    constructor: WK.TestResultIndex,
+
+    // Public
+
+    findTest: function(name)
+    {
+        if (!this.testsByName.has(name)) {
+            var test = new WK.Test(name);
+            this.testsByName.set(name, test);
+            return test;
+        }
+
+        return this.testsByName.get(name);
+    },
+
+    findResultsForTest: function(test)
+    {
+        var test = this.findTest(test);
+        if (!this.resultsByTest.has(test)) {
+            var map = new Map;
+            this.resultsByTest.set(test, map);
+            return map;
+        }
+
+        return this.resultsByTest.get(test);
+    }
 }

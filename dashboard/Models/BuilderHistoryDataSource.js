@@ -27,12 +27,13 @@
 
 var WK = WK || {};
 
-WK.BuilderHistoryDataSource = function(serverURL)
+WK.BuilderHistoryDataSource = function(delegate, serverURL)
 {
     console.assert(serverURL);
 
     this._serverURL = serverURL;
     this._resultsCache = new Map;
+    this._delegate = delegate; // Used to get the testIndex.
 }
 
 WK.BuilderHistoryDataSource.prototype = {
@@ -47,8 +48,6 @@ WK.BuilderHistoryDataSource.prototype = {
             return this._resultsCache.get(builder);
 
         var result = new Promise(function(resolve, reject) {
-            console.log("Loading results for builder: " + builder.name);
-
             JSON.load(this.resultsURLForBuilder(builder), resolve, reject);
         }.bind(this))
         .then(this._processResultsPayloadForBuilder.bind(this, builder));
@@ -117,14 +116,8 @@ WK.BuilderHistoryDataSource.prototype = {
             var revision = builderPayload.webkitRevision[i];
             builderRuns.push(new WK.BuilderRun(builder, buildNumber, revision, timestamp));
         }
-        console.log("builder runs:", builderRuns);
-
         var testResults = recursivelyFlattenObjectTrie(builderPayload.tests);
-        console.log("results:", testResults);
-
-        var history = WK.BuilderHistory.fromPayload(builder, builderRuns, testResults);
-        console.log("builder history:", history);
-        return history;
+        return WK.BuilderHistory.fromPayload(builder, builderRuns, this._delegate.testIndex, testResults);
     },
 
 };

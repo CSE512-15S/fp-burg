@@ -27,10 +27,12 @@ WK.TestResultsOverviewController = function() {
     WK.Object.call(this);
 
     // First, set up data sources.
-    this._builderHistoryDataSource = new WK.BuilderHistoryDataSource("https://webkit-test-results.appspot.com/");
+    this._builderHistoryDataSource = new WK.BuilderHistoryDataSource(this, "https://webkit-test-results.appspot.com/");
     this._builderListDataSource = new WK.BuilderListDataSource("./Legacy/builders.jsonp");
     this._builderListDataSource.loadBuilders()
         .then(this._buildersListLoaded.bind(this));
+
+    this._testIndex = new WK.TestResultIndex();
 
     // Build the UI skeleton.
     this.element = document.getElementById("content");
@@ -38,8 +40,10 @@ WK.TestResultsOverviewController = function() {
     headerElement.textContent = "Test Results History";
     this.element.appendChild(headerElement);
 
-    // Set up initial view state.
+    this._gridView = new WK.BuilderHistoryGridView();
+    this.element.appendChild(this._gridView.element);
 
+    // Set up initial view state.
 }
 
 WK.TestResultsOverviewController.prototype = {
@@ -47,6 +51,10 @@ WK.TestResultsOverviewController.prototype = {
     constructor: WK.TestResultsOverviewController,
 
     // Public
+    get testIndex()
+    {
+        return this._testIndex;
+    },
 
     // Private
 
@@ -55,12 +63,22 @@ WK.TestResultsOverviewController.prototype = {
         this._builders = builders;
         console.log("Loaded builders: ", builders);
 
-        console.log("Noodling around with builder: ", builders[0]);
-
-        this._builderHistoryDataSource.fetchHistoryForBuilder(builders[0]);
+        // FIXME: more intelligent show/hide of platforms, builders, configurations.
+        this._gridView.builders = builders.slice(0, 6);
 
         _.each(builders, function(builder) {
-            //this._builderHistoryDataSource.fetchResultsForBuilder(builder);
+            this._builderHistoryDataSource.fetchHistoryForBuilder(builder)
+                .then(this._updateTestIndicesFromHistory.bind(this));
+        }, this);
+    },
+
+    _updateTestIndicesFromHistory: function(history)
+    {
+        console.assert(history instanceof WK.BuilderHistory, history);
+
+        console.log("Noodling around with history:", history); // XXX
+        history.resultsByTest.forEach(function(result, test) {
+            this._testIndex.findResultsForTest(test).set(history.builder, result);
         }, this);
     }
 };

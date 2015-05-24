@@ -25,20 +25,7 @@
 
 var WK = WK || {};
 
-WK.BuilderHistory = function(builder, runs, resultsByTest)
+WK.Test = function(fullName)
 {
-    this.builder = builder;
-    this.runs = runs;
-    this.resultsByTest = resultsByTest;
-}
-
-WK.BuilderHistory.fromPayload = function(builder, runs, testIndex, resultsMap)
-{
-    var resultsByTest = new Map;
-    resultsMap.forEach(function(resultsPayload, testName) {
-        var test = testIndex.findTest(testName);
-        resultsByTest.set(test, WK.TestResultHistory.fromPayload(resultsPayload, runs));
-    });
-
-    return new WK.BuilderHistory(builder, runs, resultsByTest);
+    this.fullName = fullName;
 }

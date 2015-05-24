@@ -33,19 +33,27 @@ WK.TestResult = function(duration, outcome)
 
 WK.TestResult.Outcome = {
     Pass: "outcome-pass",
-    Fail: "outcome-fail",
+    FailText: "outcome-fail-text",
+    FailImage: "outcome-fail-image",
+    FailAudio: "outcome-fail-audio",
     Timeout: "outcome-timeout",
     Crash: "outcome-crash",
-    ImageDiff: "outcome-imagediff"
-}
+    Skip: "outcome-skip",
+    Missing: "outcome-missing", // Expected test result is missing.
+    NoData: "outcome-nodata", // Happens when a test isn't run for some reason.
+};
 
 WK.TestResult.Outcome.fromCharacter = function(c) {
     switch (c) {
         case 'P': return WK.TestResult.Outcome.Pass;
-        case 'F': return WK.TestResult.Outcome.Fail;
+        case 'F': return WK.TestResult.Outcome.FailText;
+        case 'I': return WK.TestResult.Outcome.FailImage;
+        case 'A': return WK.TestResult.Outcome.FailAudio;
         case 'T': return WK.TestResult.Outcome.Timeout;
         case 'C': return WK.TestResult.Outcome.Crash;
-        case 'I': return WK.TestResult.Outcome.ImageDiff;
+        case 'X': return WK.TestResult.Outcome.Skip;
+        case 'N': return WK.TestResult.Outcome.NoData;
+        case 'O': return WK.TestResult.Outcome.Missing;
         default: console.error("Unknown outcome character: ", c);
     }
 }

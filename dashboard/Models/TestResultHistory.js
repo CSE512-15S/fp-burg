@@ -25,9 +25,35 @@
 
 var WK = WK || {};
 
-WK.TestResultHistory = function(results, resultsCounts) {
+WK.TestResultHistory = function(runs, results, resultsCounts) {
+    this._runs = runs;
     this._results = results;
     this._resultsCounts = resultsCounts;
+}
+
+WK.TestResultHistory.prototype = {
+    __proto__: WK.Object,
+    constructor: WK.TestResultHistory,
+
+    forEachSingleResult: function(callback) {
+        // Invokes callback for every single result, including repeats.
+        this.forEachRepeatGroup(function(runs, result) {
+            for (var i = 0; i < runs.length; ++i)
+                callback(runs[i], result);
+        });
+
+    },
+
+    forEachRepeatGroup: function(callback) {
+        // Invokes callback for every result, excluding repeated results.
+        var run_i = 0;
+        for (var i = 0; i < this._results.length; ++i) {
+            var repeatCount = this._resultsCounts[i];
+            var runs = this._runs.slice(run_i, repeatCount);
+            callback(runs, this._results[i]);
+            run_i += repeatCount;
+        }
+    }
 }
 
 WK.TestResultHistory.fromPayload = function(payload, runs) {
@@ -81,5 +107,5 @@ WK.TestResultHistory.fromPayload = function(payload, runs) {
             repeatCount += 1;
     }
 
-    return new WK.TestResultHistory(zippedResults, zippedResultsCounts);
+    return new WK.TestResultHistory(runs, zippedResults, zippedResultsCounts);
 }
