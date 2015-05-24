@@ -30,7 +30,7 @@ WK.BuilderHistoryGridView = function() {
     this._tests = [];
 
     this.element = document.createElement("table");
-    this.element.className = "";
+    this.element.className = "builder-history-grid";
 
     this._boundRenderFunction = this.render.bind(this);
 };
@@ -52,6 +52,17 @@ WK.BuilderHistoryGridView.prototype = {
         this.renderSoon();
     },
 
+    get tests()
+    {
+        return this._tests.slice();
+    },
+
+    set tests(value)
+    {
+        this._tests = value;
+        this.renderSoon();
+    },
+
     renderSoon: function()
     {
         if (this._requestAnimationFrameToken)
@@ -65,7 +76,19 @@ WK.BuilderHistoryGridView.prototype = {
         if (this._requestAnimationFrameToken)
             this._requestAnimationFrameToken = undefined;
 
+        if (!this._tests.length || !this._builders.length)
+            return;
+
+        console.log("rendering");
+
         this.element.removeChildren();
+
+        var colgroup = document.createElement("colgroup");
+        _.each(this._builders, function(builder) {
+            var col = document.createElement("col");
+            colgroup.appendChild(col);
+        });
+        this.element.appendChild(colgroup);
 
         var thead = document.createElement("thead");
         var trhead = document.createElement("tr");
@@ -84,7 +107,7 @@ WK.BuilderHistoryGridView.prototype = {
         _.each(this._tests, function(test) {
             var tr = document.createElement("tr");
             var tdtest = document.createElement("td");
-            tdtest.textContent = test.fullName;
+            tdtest.textContent = test.trimmedName(65);
             tr.appendChild(tdtest);
             _.each(this._builders, function(builder) {
                 var cell = document.createElement("td");
@@ -92,7 +115,7 @@ WK.BuilderHistoryGridView.prototype = {
                 tr.appendChild(cell);
             });
             tbody.appendChild(tr);
-        });
+        }, this);
         this.element.appendChild(tbody);
     }
 };

@@ -64,12 +64,17 @@ WK.TestResultsOverviewController.prototype = {
         console.log("Loaded builders: ", builders);
 
         // FIXME: more intelligent show/hide of platforms, builders, configurations.
-        this._gridView.builders = builders.slice(0, 6);
+        var buildersToDisplay = builders.slice(0, 6);
+        this._gridView.builders = buildersToDisplay;
 
-        _.each(builders, function(builder) {
-            this._builderHistoryDataSource.fetchHistoryForBuilder(builder)
+        var histories = _.map(buildersToDisplay, function(builder) {
+            return this._builderHistoryDataSource.fetchHistoryForBuilder(builder)
                 .then(this._updateTestIndicesFromHistory.bind(this));
         }, this);
+
+        Promise.race(histories).then(function() {
+            this._gridView.tests = this._testIndex.allTests;
+        }.bind(this));
     },
 
     _updateTestIndicesFromHistory: function(history)

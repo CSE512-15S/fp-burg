@@ -1,0 +1,24 @@
+table.builder-history-grid {
+    table-layout: fixed;
+    width: 100%;
+}
+
+table.builder-history-grid col:first-of-type,
+table.builder-history-grid th:first-of-type,
+table.builder-history-grid td:first-of-type {
+    width: 400px;
+}
+
+table.builder-history-grid td:first-of-type {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    font-size: 12px;
+}
+
+table.builder-history-grid col:not(:first-of-type) {
+    width: 150px;
+}
+
+table.builder-history-grid tbody tr:nth-of-type(2n) {
+    background-color: #e5e1da;
+}

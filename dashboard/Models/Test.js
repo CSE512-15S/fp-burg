@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2015 University of Washington.
  *
@@ -28,4 +29,39 @@ var WK = WK || {};
 WK.Test = function(fullName)
 {
     this.fullName = fullName;
+}
+
+WK.Test.prototype = {
+    __proto__: WK.Object,
+    constructor: WK.Test,
+
+    trimmedName: function(maxLength)
+    {
+        if (this.fullName.length <= maxLength)
+            return this.fullName;
+
+        // The goal of this trimming strategy is to make it easy to scan the
+        // left edge alphabetically, and preserve a unique filename fragment
+        // on the right edge that can be used as a search string. When there's
+        // not enough space, sacrifice middle path components.
+
+        // Always preserve the leading path component.
+        var parts = this.fullName.split('/');
+        var first = parts[0];
+        var last = parts[parts.length - 1];
+        if (last.length + first.length > maxLength)
+            return first + "/..." + last.slice(4 + last.length - maxLength + first.length);
+
+        // If we can fit the entire first and last component, try to add more
+        // components starting from the right side and stopping when out of space.
+        var availChars = maxLength - (first.length + last.length + 2);
+        for (var i = parts.length - 2; i > 0; --i) {
+            if (parts[i].length > availChars)
+                return first + '/...' + parts.slice(i + 1, parts.length - 2 - i).join('/') + '/' + last;
+
+            availChars -= parts[i].length;
+        }
+
+        return this.fullName;
+    }
 }

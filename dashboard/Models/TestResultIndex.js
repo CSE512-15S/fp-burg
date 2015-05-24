@@ -28,6 +28,7 @@ var WK = WK || {};
 WK.TestResultIndex = function()
 {
     this.testsByName = new Map;
+    this._allTests = [];
 
     // Allows lookup by Test and Builder:
     // Map(Test -> Map(Builder -> TestResultHistory))
@@ -41,10 +42,18 @@ WK.TestResultIndex.prototype = {
 
     // Public
 
+    get allTests()
+    {
+        return _.sortBy(this._allTests, "fullName");
+    },
+
     findTest: function(name)
     {
+        console.assert(typeof name === "string", name);
+
         if (!this.testsByName.has(name)) {
             var test = new WK.Test(name);
+            this._allTests.push(test);
             this.testsByName.set(name, test);
             return test;
         }
@@ -52,9 +61,12 @@ WK.TestResultIndex.prototype = {
         return this.testsByName.get(name);
     },
 
-    findResultsForTest: function(test)
+    findResultsForTest: function(testOrName)
     {
-        var test = this.findTest(test);
+        var test = testOrName;
+        if (!(testOrName instanceof WK.Test))
+            test = this.findTest(testOrName);
+
         if (!this.resultsByTest.has(test)) {
             var map = new Map;
             this.resultsByTest.set(test, map);
