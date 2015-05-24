@@ -40,7 +40,7 @@ WK.TestResultsOverviewController = function() {
     headerElement.textContent = "Test Results History";
     this.element.appendChild(headerElement);
 
-    this._gridView = new WK.BuilderHistoryGridView();
+    this._gridView = new WK.BuilderHistoryGridView(this);
     this.element.appendChild(this._gridView.element);
 
     // Set up initial view state.
@@ -61,7 +61,6 @@ WK.TestResultsOverviewController.prototype = {
     _buildersListLoaded: function(builders)
     {
         this._builders = builders;
-        console.log("Loaded builders: ", builders);
 
         // FIXME: more intelligent show/hide of platforms, builders, configurations.
         var buildersToDisplay = builders.slice(0, 6);
@@ -72,8 +71,10 @@ WK.TestResultsOverviewController.prototype = {
                 .then(this._updateTestIndicesFromHistory.bind(this));
         }, this);
 
-        Promise.race(histories).then(function() {
-            this._gridView.tests = this._testIndex.allTests;
+        Promise.all(histories).then(function() {
+            // FIXME: more intelligent selection of default test set.
+            this._gridView.tests = _.chain(this._testIndex.allTests)
+                .sample(100).sortBy("fullName").value();
         }.bind(this));
     },
 

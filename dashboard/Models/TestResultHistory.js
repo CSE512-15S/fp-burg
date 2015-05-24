@@ -35,6 +35,11 @@ WK.TestResultHistory.prototype = {
     __proto__: WK.Object,
     constructor: WK.TestResultHistory,
 
+    get runs()
+    {
+        return this._runs;
+    },
+
     forEachSingleResult: function(callback) {
         // Invokes callback for every single result, including repeats.
         this.forEachRepeatGroup(function(runs, result) {

@@ -23,8 +23,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WK.BuilderHistoryGridView = function() {
+WK.BuilderHistoryGridView = function(delegate) {
     WK.Object.call(this);
+
+    console.assert(delegate);
+
+    this._delegate = delegate;
 
     this._builders = [];
     this._tests = [];
@@ -84,17 +88,15 @@ WK.BuilderHistoryGridView.prototype = {
         this.element.removeChildren();
 
         var colgroup = document.createElement("colgroup");
-        _.each(this._builders, function(builder) {
-            var col = document.createElement("col");
-            colgroup.appendChild(col);
-        });
+        for (var i = -1; i < this._builders.length; ++i)
+            colgroup.appendChild(document.createElement("col"));
         this.element.appendChild(colgroup);
 
         var thead = document.createElement("thead");
         var trhead = document.createElement("tr");
         thead.appendChild(trhead);
-        var thcorner = this.cornerElement = document.createElement("th");
-        trhead.appendChild(thcorner);
+        var thleftcorner = this.cornerElement = document.createElement("th");
+        trhead.appendChild(thleftcorner);
 
         _.each(this._builders, function(builder) {
             var th = document.createElement("th");
@@ -105,15 +107,25 @@ WK.BuilderHistoryGridView.prototype = {
         this.element.appendChild(thead);
         var tbody = document.createElement("tbody");
         _.each(this._tests, function(test) {
+            var testResults = this._delegate.testIndex.findResultsForTest(test);
+
             var tr = document.createElement("tr");
             var tdtest = document.createElement("td");
             tdtest.textContent = test.trimmedName(65);
             tr.appendChild(tdtest);
             _.each(this._builders, function(builder) {
                 var cell = document.createElement("td");
-                cell.textContent = "placeholder";
+
+                var builderResult = testResults.get(builder);
+                if (builderResult) {
+                    var sparkline = new WK.TestResultHistorySparklineView(builderResult);
+                    cell.appendChild(sparkline.element);
+                } else {
+                    cell.textContent = "PASS / SKIP";
+                }
+
                 tr.appendChild(cell);
-            });
+            }, this);
             tbody.appendChild(tr);
         }, this);
         this.element.appendChild(tbody);
