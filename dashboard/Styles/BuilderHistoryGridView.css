@@ -57,6 +57,10 @@ table.builder-history-grid thead {
     font-size: 12px;
 }
 
+table.builder-history-grid tbody td {
+    height: 24px;
+}
+
 table.builder-history-grid tbody tr:nth-of-type(2n + 1) {
     background-color: #e5e1da;
 }
