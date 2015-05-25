@@ -48,7 +48,11 @@ table.builder-history-grid td:not(:first-of-type) {
 }
 
 table.builder-history-grid col:not(:first-of-type) {
-    width: 150px;
+    width: 120px;
+}
+
+table.builder-history-grid thead {
+    font-size: 12px;
 }
 
 table.builder-history-grid tbody tr:nth-of-type(2n) {

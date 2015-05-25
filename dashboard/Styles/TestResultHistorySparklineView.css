@@ -24,16 +24,44 @@
  */
 
 .test-results-sparkline {
-    background-color: #ddd;
-    max-width: 150px;
+    max-width: 120px;
 }
 
 .test-results-sparkline svg {
     margin: 0;
 }
 
+line.repeat-lines {
+    stroke-width: 2px;
+    stroke: black;
+}
+
+line.repeat-lines.outcome-pass {
+    stroke: rgb(47, 96, 25);
+}
+
+line.repeat-lines.outcome-fail-text,
+line.repeat-lines.outcome-fail-image,
+line.repeat-lines.outcome-fail-audio {
+    stroke: rgb(93, 15, 0);
+}
+
+line.repeat-lines.outcome-timeout {
+    stroke: rgb(155, 104, 0);
+}
+
+line.repeat-lines.outcome-crash {
+    stroke: rgb(112, 9, 159);
+}
+
+line.repeat-lines.outcome-skip,
+line.repeat-lines.outcome-missing,
+line.repeat-lines.outcome-nodata {
+    stroke: rgb(200, 200, 200);
+}
+
 rect.repeat-block {
-    fill-opacity: 0.5;
+    fill-opacity: 0.35;
     height: 100%;
 }
 
@@ -48,7 +76,7 @@ rect.repeat-block.outcome-fail-audio {
 }
 
 rect.repeat-block.outcome-timeout {
-    fill: rgb(205, 137, 0);
+    fill: rgb(255, 137, 0);
 }
 
 rect.repeat-block.outcome-crash {

@@ -60,16 +60,17 @@ WK.TestResultHistorySparklineView.prototype = {
 
         var runs = this._results.runs;
 
-        var width = 150;
-        var height = 25;
+        var width = 120;
+        var height = 20;
+        var maxDuration = 30;
 
         var x = d3.scale.linear()
             .domain([0, runs.length])
             .rangeRound([0, width]);
 
         var y = d3.scale.linear()
-            .domain([0, 30])
-            .range([0, height]);
+            .domain([0, maxDuration])
+            .rangeRound([1, height - 1]);
 
         var svg = d3.select(this.element).append("svg")
             .attr("width", width)
@@ -82,13 +83,14 @@ WK.TestResultHistorySparklineView.prototype = {
                 begin: resultCount,
                 repeat: repeatedRuns.length,
                 outcome: result.outcome,
-                duration: result.duration
+                duration: Math.min(result.duration, maxDuration)
             });
 
             resultCount += repeatedRuns.length;
         })
 
-        var base = runs.length - resultCount, repeat = 0;
+        var missingResultCount = runs.length - resultCount;
+        var base = missingResultCount, repeat = 0;
         var repeatData = [];
         var currentOutcome = timingData[0].outcome;
         function addRepeatedOutcome() {
@@ -111,12 +113,20 @@ WK.TestResultHistorySparklineView.prototype = {
         addRepeatedOutcome();
 
         svg.selectAll(".repeat-block")
-        .data(repeatData)
-        .enter()
+        .data(repeatData).enter()
             .append("rect")
             .attr("class", function(d) { return "repeat-block " + d.outcome; })
             .attr("x", function(d) { return x(d.begin); })
-            .attr("width", function(d) { return x(d.repeat); })
+            .attr("width", function(d) { return x(d.repeat); });
+
+        svg.selectAll(".repeat-lines")
+        .data(timingData).enter()
+            .append("line")
+            .attr("class", function(d) { return "repeat-lines " + d.outcome; })
+            .attr("x1", function(d) { return x(d.begin + missingResultCount); })
+            .attr("y1", function(d) { return y(maxDuration - d.duration); })
+            .attr("x2", function(d) { return x(d.begin + d.repeat + missingResultCount); })
+            .attr("y2", function(d) { return y(maxDuration - d.duration); });
     },
 
     // Private
