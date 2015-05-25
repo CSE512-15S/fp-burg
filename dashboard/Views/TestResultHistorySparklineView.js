@@ -75,20 +75,20 @@ WK.TestResultHistorySparklineView.prototype = {
             .attr("width", width)
             .attr("height", height);
 
-        var runCount = 0;
+        var resultCount = 0;
         var timingData = [];
-        this._results.forEachRepeatGroup(function(runs, result) {
+        this._results.forEachRepeatGroup(function(repeatedRuns, result) {
             timingData.push({
-                begin: runCount,
-                repeat: runs.length,
+                begin: resultCount,
+                repeat: repeatedRuns.length,
                 outcome: result.outcome,
                 duration: result.duration
             });
 
-            runCount += runs.length;
+            resultCount += repeatedRuns.length;
         })
 
-        var base = 0, repeat = 0;
+        var base = runs.length - resultCount, repeat = 0;
         var repeatData = [];
         var currentOutcome = timingData[0].outcome;
         function addRepeatedOutcome() {
@@ -104,6 +104,7 @@ WK.TestResultHistorySparklineView.prototype = {
                 addRepeatedOutcome();
                 currentOutcome = timingData[i].outcome;
                 base += repeat;
+                repeat = 0;
             }
             repeat += timingData[i].repeat;
         }

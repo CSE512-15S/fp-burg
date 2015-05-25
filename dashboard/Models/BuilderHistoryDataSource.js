@@ -116,6 +116,10 @@ WK.BuilderHistoryDataSource.prototype = {
             var revision = builderPayload.webkitRevision[i];
             builderRuns.push(new WK.BuilderRun(builder, buildNumber, revision, timestamp));
         }
+        // The data is returned as newest-first, but this is awkward for our
+        // time-series style visualizations. Reverse this and take care to reverse
+        // any congruent arrays.
+        builderRuns.reverse();
         var testResults = recursivelyFlattenObjectTrie(builderPayload.tests);
         return WK.BuilderHistory.fromPayload(builder, builderRuns, this._delegate.testIndex, testResults);
     },

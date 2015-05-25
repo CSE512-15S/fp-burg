@@ -67,6 +67,8 @@ WK.TestResultHistory.fromPayload = function(payload, runs) {
 
     var results = payload.results;
     var times = payload.times;
+    results.reverse();
+    times.reverse();
 
     var result_i = -1, result_j = 0;
     var time_i = -1, time_j = 0;
