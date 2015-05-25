@@ -54,7 +54,7 @@ WK.TestResultHistory.prototype = {
         var run_i = 0;
         for (var i = 0; i < this._results.length; ++i) {
             var repeatCount = this._resultsCounts[i];
-            var runs = this._runs.slice(run_i, repeatCount);
+            var runs = this._runs.slice(run_i, run_i + repeatCount);
             callback(runs, this._results[i]);
             run_i += repeatCount;
         }

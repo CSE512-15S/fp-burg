@@ -30,10 +30,10 @@ WK.TestResultHistorySparklineView = function(testResults) {
 
     this._results = testResults;
 
-    console.log("sparkline for:", testResults);
-
     this.element = document.createElement("div");
     this.element.className = "test-results-sparkline";
+
+    this.element.addEventListener("click", this._sparklineClicked.bind(this));
 
     this._boundRenderFunction = this.render.bind(this);
     this.renderSoon();
@@ -64,7 +64,8 @@ WK.TestResultHistorySparklineView.prototype = {
         var height = 25;
 
         var x = d3.scale.linear()
-            .range([0, width]);
+            .domain([0, runs.length])
+            .rangeRound([0, width]);
 
         var y = d3.scale.linear()
             .domain([0, 30])
@@ -74,9 +75,53 @@ WK.TestResultHistorySparklineView.prototype = {
             .attr("width", width)
             .attr("height", height);
 
-        var minDate = d3.min(runs, function(run) { return run.timestamp; });
-        var maxDate = d3.max(runs, function(run) { return run.timestamp; });
-        x.domain([minDate, maxDate]);
+        var runCount = 0;
+        var timingData = [];
+        this._results.forEachRepeatGroup(function(runs, result) {
+            timingData.push({
+                begin: runCount,
+                repeat: runs.length,
+                outcome: result.outcome,
+                duration: result.duration
+            });
 
+            runCount += runs.length;
+        })
+
+        var base = 0, repeat = 0;
+        var repeatData = [];
+        var currentOutcome = timingData[0].outcome;
+        function addRepeatedOutcome() {
+            repeatData.push({
+                begin: base,
+                repeat: repeat,
+                outcome: currentOutcome
+            });
+        }
+
+        for (var i = 0; i < timingData.length; ++i) {
+            if (timingData[i].outcome !== currentOutcome) {
+                addRepeatedOutcome();
+                currentOutcome = timingData[i].outcome;
+                base += repeat;
+            }
+            repeat += timingData[i].repeat;
+        }
+        addRepeatedOutcome();
+
+        svg.selectAll(".repeat-block")
+        .data(repeatData)
+        .enter()
+            .append("rect")
+            .attr("class", function(d) { return "repeat-block " + d.outcome; })
+            .attr("x", function(d) { return x(d.begin); })
+            .attr("width", function(d) { return x(d.repeat); })
+    },
+
+    // Private
+
+    _sparklineClicked: function(event)
+    {
+        console.log("relevant data: ", this._results);
     }
 };

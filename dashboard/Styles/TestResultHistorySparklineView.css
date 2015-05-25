@@ -24,6 +24,39 @@
  */
 
 .test-results-sparkline {
-    border: 1px solid #ccc;
     background-color: #ddd;
+    max-width: 150px;
+}
+
+.test-results-sparkline svg {
+    margin: 0;
+}
+
+rect.repeat-block {
+    fill-opacity: 0.5;
+    height: 100%;
+}
+
+rect.repeat-block.outcome-pass {
+    fill: rgb(90, 187, 49);
+}
+
+rect.repeat-block.outcome-fail-text,
+rect.repeat-block.outcome-fail-image,
+rect.repeat-block.outcome-fail-audio {
+    fill: rgb(178, 28, 0);
+}
+
+rect.repeat-block.outcome-timeout {
+    fill: rgb(205, 137, 0);
+}
+
+rect.repeat-block.outcome-crash {
+    fill: rgb(112, 9, 159);
+}
+
+rect.repeat-block.outcome-skip,
+rect.repeat-block.outcome-missing,
+rect.repeat-block.outcome-nodata {
+    fill: rgb(200, 200, 200);
 }
