@@ -68,49 +68,51 @@ WK.TestResultHistory.fromPayload = function(payload, runs) {
     var results = payload.results;
     var times = payload.times;
 
-    var result_i = 0, result_j = 0;
-    var time_i = 0, time_j = 0;
-    var repeatCount = 0;
+    var result_i = -1, result_j = 0;
+    var time_i = -1, time_j = 0;
+    var repeatCount = -1;
+
+    // Iterate once per run. Whenever we get to a new time or result chunk,
+    // eagerly push a result for it. Repeat count for entry i is pushed when
+    // result for chunk i + 1 is pushed.
+
+    function addResult() {
+        var time = times[time_i][1];
+        var outcome = WK.TestResult.Outcome.fromCharacter(results[result_i][1]);
+        zippedResults.push(new WK.TestResult(time, outcome));
+    }
 
     for (var run_i = 0; run_i < runs.length; ++run_i) {
-        var shouldFlush = false;
-        result_j += 1;
-        time_j += 1;
+        // Increment repeats.
+        var needNewResult = result_i < 0 || result_j === results[result_i][0] - 1;
+        var needNewTime = time_i < 0 || time_j === times[time_i][0] - 1;
 
-        // If we need to get the next chunk, move indices and flush.
-        if (result_j === results[result_i][0]) {
-            result_i += 1;
+        if (needNewResult) {
             result_j = 0;
-            shouldFlush = true;
-        }
+            result_i++;
+        } else
+            result_j++;
 
-        if (time_j === times[time_i][0]) {
-            time_i += 1;
+        if (needNewTime) {
             time_j = 0;
-            shouldFlush = true;
-        }
+            time_i++;
+        } else
+            time_j++;
 
-        // But don't flush if there are no more chunks. This should be the end.
-
-        // FIXME: it should be the case that these end at the same time, but
-        // there is a bug in the backend's code to truncate results to a max
-        // number of builds. It only truncates later run-length-encoded entries,
-        // but does not adjust the last entry even if it would sum to greater
-        // than the max number of builds. I think the faulty code is here:
-        //
-        // Tools/Scripts/TestResultServer/model/jsonresults.py#_remove_items_over_max_number_of_builds
-        if (result_i === results.length || time_i === times.length)
+        if (result_i === results.length && time_i === times.length)
             break;
 
-        if (shouldFlush) {
-            var time = times[time_i][1];
-            var outcome = WK.TestResult.Outcome.fromCharacter(results[result_i][1]);
-            zippedResults.push(new WK.TestResult(time, outcome));
-            zippedResultsCounts.push(repeatCount + 1);
+        if (needNewResult || needNewTime) {
+            addResult();
+            if (repeatCount >= 0)
+                zippedResultsCounts.push(repeatCount + 1);
+
             repeatCount = 0;
         } else
-            repeatCount += 1;
+            repeatCount++;
+
     }
+    zippedResultsCounts.push(repeatCount + 1);
 
     return new WK.TestResultHistory(runs, zippedResults, zippedResultsCounts);
 }
