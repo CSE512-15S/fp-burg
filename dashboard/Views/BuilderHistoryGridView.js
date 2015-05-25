@@ -87,6 +87,11 @@ WK.BuilderHistoryGridView.prototype = {
 
         this.element.removeChildren();
 
+        // Fixing the maximum width avoids spreading inter-column widths at large sizes.
+        var testNameWidth = 400;
+        var testGraphWidth = 130;
+        this.element.style.maxWidth = 400 + this._builders.length * 130 + 'px';
+
         var colgroup = document.createElement("colgroup");
         for (var i = -1; i < this._builders.length; ++i)
             colgroup.appendChild(document.createElement("col"));

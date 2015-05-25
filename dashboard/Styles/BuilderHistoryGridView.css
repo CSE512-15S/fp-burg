@@ -39,22 +39,24 @@ table.builder-history-grid td:first-of-type {
     text-overflow: ellipsis;
     overflow: hidden;
     font-size: 12px;
+    padding-left: 5px;
 }
 
 table.builder-history-grid td:not(:first-of-type) {
     text-align: center;
     color: #aaa;
     font-size: 10px;
+    border-left: 2px solid transparent;
 }
 
 table.builder-history-grid col:not(:first-of-type) {
-    width: 120px;
+    width: 130px;
 }
 
 table.builder-history-grid thead {
     font-size: 12px;
 }
 
-table.builder-history-grid tbody tr:nth-of-type(2n) {
+table.builder-history-grid tbody tr:nth-of-type(2n + 1) {
     background-color: #e5e1da;
 }

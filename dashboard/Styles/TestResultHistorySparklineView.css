@@ -24,11 +24,8 @@
  */
 
 .test-results-sparkline {
-    max-width: 120px;
-}
-
-.test-results-sparkline svg {
-    margin: 0;
+    max-width: 130px;
+    margin: auto;
 }
 
 line.repeat-lines {
