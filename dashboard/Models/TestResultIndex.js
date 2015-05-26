@@ -46,6 +46,15 @@ WK.TestResultIndex.prototype = {
         return this._allTests;
     },
 
+    // Maybe when a decent fuzzy matching library comes out, we can use it.
+    // I tried two (fuzzyset.js and fuse.js) and the results are worthless.
+    testsMatchingSearchString: function(searchString)
+    {
+        return this.allTests.filter(function(test) {
+            return test.fullName.indexOf(searchString) !== -1;
+        });
+    },
+
     findTest: function(name)
     {
         console.assert(typeof name === "string", name);
@@ -73,5 +82,5 @@ WK.TestResultIndex.prototype = {
         }
 
         return this.resultsByTest.get(test);
-    }
+    },
 }

@@ -40,9 +40,12 @@ WK.TestResultsOverviewController = function() {
     headerElement.textContent = "Test Results History";
     this.element.appendChild(headerElement);
 
+    var suppressIncrementalSearch = true;
+    this._searchBar = new WK.SearchBar("filter-test-name", "Search Tests", null, suppressIncrementalSearch);
+    this._searchBar.addEventListener(WK.SearchBar.Event.TextChanged, this._searchBarTextChanged, this);
+
     this._gridView = new WK.BuilderHistoryGridView(this);
-    this._testNameSearchBox = new WK.TestNameFilterSearchBox(this._testIndex);
-    this._gridView.cornerElement.appendChild(this._testNameSearchBox.element);
+    this._gridView.cornerElement.appendChild(this._searchBar.element);
     this.element.appendChild(this._gridView.element);
 
     // Set up initial view state.
@@ -60,6 +63,11 @@ WK.TestResultsOverviewController.prototype = {
 
     // Private
 
+    _searchBarTextChanged: function(event)
+    {
+        this._populateResultsGrid();
+    },
+
     _buildersListLoaded: function(builders)
     {
         this._builders = builders;
@@ -73,25 +81,28 @@ WK.TestResultsOverviewController.prototype = {
                 .then(this._updateTestIndicesFromHistory.bind(this));
         }, this);
 
-        // First, update the test name fuzzy search index. Then apply the cheapest filters
-        // before the fuzzy search, which can be expensive. Finally, sort what's left.
+        Promise.all(histories).then(this._populateResultsGrid.bind(this));
+    },
 
-        Promise.all(histories).then(function() {
-            this._testNameSearchBox.refresh();
-        }.bind(this))
-        .then(function() {
-            var testsToDisplay = this._testIndex.allTests.slice();
-            testsToDisplay = this._testNameSearchBox.filterTestResults(testsToDisplay);
-            testsToDisplay = _.sortBy(testsToDisplay, "fullName");
-            this._gridView.tests = testsToDisplay;
-        }.bind(this));
+    _populateResultsGrid: function()
+    {
+        var testsToDisplay = [];
+        var searchString = this._searchBar.text;
+        if (searchString.length)
+            testsToDisplay = this._testIndex.testsMatchingSearchString(searchString);
+        else
+            testsToDisplay = this._testIndex.allTests;
+
+        testsToDisplay = _.sortBy(testsToDisplay, "fullName");
+
+        // TODO: more filters go here.
+        this._gridView.tests = testsToDisplay;
     },
 
     _updateTestIndicesFromHistory: function(history)
     {
         console.assert(history instanceof WK.BuilderHistory, history);
 
-        console.log("Noodling around with history:", history); // XXX
         history.resultsByTest.forEach(function(result, test) {
             this._testIndex.findResultsForTest(test).set(history.builder, result);
         }, this);
