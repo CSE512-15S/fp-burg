@@ -73,6 +73,9 @@ WK.TestResultsOverviewController.prototype = {
                 .then(this._updateTestIndicesFromHistory.bind(this));
         }, this);
 
+        // First, update the test name fuzzy search index. Then apply the cheapest filters
+        // before the fuzzy search, which can be expensive. Finally, sort what's left.
+
         Promise.all(histories).then(function() {
             this._testNameSearchBox.refresh();
         }.bind(this))
