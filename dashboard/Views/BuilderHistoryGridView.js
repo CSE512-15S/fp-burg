@@ -36,7 +36,12 @@ WK.BuilderHistoryGridView = function(delegate) {
     this.element = document.createElement("table");
     this.element.className = "builder-history-grid";
 
+    this.cornerElement = document.createElement("th");
+
     this._boundRenderFunction = this.render.bind(this);
+    this._boundRenderTableRowsIncrementally = this._renderTableRowsIncrementally.bind(this);
+
+    this._rowRenderIndex = 0;
 };
 
 WK.BuilderHistoryGridView.prototype = {
@@ -100,8 +105,8 @@ WK.BuilderHistoryGridView.prototype = {
         var thead = document.createElement("thead");
         var trhead = document.createElement("tr");
         thead.appendChild(trhead);
-        var thleftcorner = this.cornerElement = document.createElement("th");
-        trhead.appendChild(thleftcorner);
+        // Reused across re-renders, since clients put things in it.
+        trhead.appendChild(this.cornerElement);
 
         _.each(this._builders, function(builder) {
             var th = document.createElement("th");
@@ -110,8 +115,17 @@ WK.BuilderHistoryGridView.prototype = {
         });
 
         this.element.appendChild(thead);
-        var tbody = document.createElement("tbody");
-        _.each(this._tests, function(test) {
+        var tbody = this.tbodyElement = document.createElement("tbody");
+        this.element.appendChild(tbody);
+
+        this._renderTableRowsIncrementally();
+    },
+
+    _renderTableRowsIncrementally: function() {
+        var rowsPerChunk = 20;
+        var i = 0;
+        while (i < rowsPerChunk && this._rowRenderIndex + i < this._tests.length) {
+            var test = this._tests[this._rowRenderIndex + i];
             var testResults = this._delegate.testIndex.findResultsForTest(test);
 
             var tr = document.createElement("tr");
@@ -131,8 +145,13 @@ WK.BuilderHistoryGridView.prototype = {
 
                 tr.appendChild(cell);
             }, this);
-            tbody.appendChild(tr);
-        }, this);
-        this.element.appendChild(tbody);
+            this.tbodyElement.appendChild(tr);
+
+            this._rowRenderIndex++;
+            i++;
+        }
+
+        if (this._rowRenderIndex < this._tests.length)
+            requestAnimationFrame(this._boundRenderTableRowsIncrementally);
     }
 };

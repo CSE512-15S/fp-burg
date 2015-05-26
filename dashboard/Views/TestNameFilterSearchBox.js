@@ -23,55 +23,31 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-var WK = WK || {};
+WK.TestNameFilterSearchBox = function() {
+    WK.Object.call(this);
 
-WK.TestResultIndex = function()
-{
-    this.testsByName = new Map;
-    this._allTests = [];
+    this.element = document.createElement("input");
+    this.element.type = "text";
+    this.element.className = "test-name-filter";
+};
 
-    // Allows lookup by Test and Builder:
-    // Map(Test -> Map(Builder -> TestResultHistory))
-    this.resultsByTest = new Map;
-}
-
-WK.TestResultIndex.prototype = {
-    __proto__: WK.Object,
-    constructor: WK.TestResultIndex,
+WK.TestNameFilterSearchBox.prototype = {
+    __proto__: WK.Object.prototype,
+    constructor: WK.TestNameFilterSearchBox,
 
     // Public
 
-    get allTests()
+    refresh: function()
     {
-        return this._allTests;
+
     },
 
-    findTest: function(name)
+    filterTestResults: function(testResults)
     {
-        console.assert(typeof name === "string", name);
+        var searchText = (this.element.value || "").trim();
+        if (!searchText.length)
+            return testResults;
 
-        if (!this.testsByName.has(name)) {
-            var test = new WK.Test(name);
-            this._allTests.push(test);
-            this.testsByName.set(name, test);
-            return test;
-        }
 
-        return this.testsByName.get(name);
     },
-
-    findResultsForTest: function(testOrName)
-    {
-        var test = testOrName;
-        if (!(testOrName instanceof WK.Test))
-            test = this.findTest(testOrName);
-
-        if (!this.resultsByTest.has(test)) {
-            var map = new Map;
-            this.resultsByTest.set(test, map);
-            return map;
-        }
-
-        return this.resultsByTest.get(test);
-    }
-}
+};

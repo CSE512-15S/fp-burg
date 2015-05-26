@@ -41,6 +41,8 @@ WK.TestResultsOverviewController = function() {
     this.element.appendChild(headerElement);
 
     this._gridView = new WK.BuilderHistoryGridView(this);
+    this._testNameSearchBox = new WK.TestNameFilterSearchBox(this._testIndex);
+    this._gridView.cornerElement.appendChild(this._testNameSearchBox.element);
     this.element.appendChild(this._gridView.element);
 
     // Set up initial view state.
@@ -72,9 +74,13 @@ WK.TestResultsOverviewController.prototype = {
         }, this);
 
         Promise.all(histories).then(function() {
-            // FIXME: more intelligent selection of default test set.
-            this._gridView.tests = _.chain(this._testIndex.allTests)
-                .sample(100).sortBy("fullName").value();
+            this._testNameSearchBox.refresh();
+        }.bind(this))
+        .then(function() {
+            var testsToDisplay = this._testIndex.allTests.slice();
+            testsToDisplay = this._testNameSearchBox.filterTestResults(testsToDisplay);
+            testsToDisplay = _.sortBy(testsToDisplay, "fullName");
+            this._gridView.tests = testsToDisplay;
         }.bind(this));
     },
 
