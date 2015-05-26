@@ -41,7 +41,7 @@ WK.TestResultsOverviewController = function() {
     this.element.appendChild(headerElement);
 
     var suppressIncrementalSearch = true;
-    this._searchBar = new WK.SearchBar("filter-test-name", "Search Tests", null, suppressIncrementalSearch);
+    this._searchBar = new WK.SearchBar("filter-test-name", "Search Tests", this, suppressIncrementalSearch);
     this._searchBar.addEventListener(WK.SearchBar.Event.TextChanged, this._searchBarTextChanged, this);
 
     this._gridView = new WK.BuilderHistoryGridView(this);
@@ -61,9 +61,17 @@ WK.TestResultsOverviewController.prototype = {
         return this._testIndex;
     },
 
+
+    // Protected delegates
+
+    searchBarDidActivate: function()
+    {
+        this._searchBarTextChanged();
+    },
+
     // Private
 
-    _searchBarTextChanged: function(event)
+    _searchBarTextChanged: function()
     {
         this._populateResultsGrid();
     },

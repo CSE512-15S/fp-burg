@@ -47,7 +47,7 @@ WK.NavigationItem.StyleClassName = "item";
 WK.NavigationItem.HiddenStyleClassName = "hidden";
 
 WK.NavigationItem.prototype = {
-    __proto__: WK.Object,
+    __proto__: WK.Object.prototype,
     constructor: WK.NavigationItem,
 
     // Public
@@ -105,5 +105,3 @@ WK.NavigationItem.prototype = {
         return classNames;
     }
 };
-
-WK.NavigationItem.prototype.__proto__ = WK.Object.prototype;
