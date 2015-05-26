@@ -118,11 +118,12 @@ WK.BuilderHistoryGridView.prototype = {
         var tbody = this.tbodyElement = document.createElement("tbody");
         this.element.appendChild(tbody);
 
+        this._rowRenderIndex = 0;
         this._renderTableRowsIncrementally();
     },
 
     _renderTableRowsIncrementally: function() {
-        var rowsPerChunk = 20;
+        var rowsPerChunk = 5;
         var i = 0;
         while (i < rowsPerChunk && this._rowRenderIndex + i < this._tests.length) {
             var test = this._tests[this._rowRenderIndex + i];

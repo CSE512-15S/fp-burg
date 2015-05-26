@@ -23,11 +23,17 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WK.TestNameFilterSearchBox = function() {
+WK.TestNameFilterSearchBox = function(testIndex) {
     WK.Object.call(this);
 
+    console.assert(testIndex instanceof WK.TestResultIndex, testIndex);
+
     this.element = document.createElement("input");
-    this.element.type = "text";
+    this.element.setAttribute("type", "search");
+    this.element.setAttribute("spellcheck", false);
+    this.element.setAttribute("placeholder", "Filter by Name");
+    this.element.setAttribute("autosave", "dashboard-test-name");
+    this.element.setAttribute("results", 5);
     this.element.className = "test-name-filter";
 };
 
@@ -39,15 +45,14 @@ WK.TestNameFilterSearchBox.prototype = {
 
     refresh: function()
     {
-
+        // TODO: rebuild the index.
     },
 
     filterTestResults: function(testResults)
     {
-        var searchText = (this.element.value || "").trim();
-        if (!searchText.length)
-            return testResults;
+        //var searchText = (this.element.value || "").trim();
+        //if (!searchText.length)
 
-
+        return testResults;
     },
 };
