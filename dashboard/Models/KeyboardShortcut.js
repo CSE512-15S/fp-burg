@@ -153,7 +153,7 @@ WK.KeyboardShortcut.prototype = {
         this._implicitlyPreventsDefault = implicitly;
     },
 
-    unbind()
+    unbind: function()
     {
         this._disabled = true;
 
@@ -167,7 +167,7 @@ WK.KeyboardShortcut.prototype = {
         targetKeyboardShortcuts.remove(this);
     },
 
-    matchesEvent(event)
+    matchesEvent: function(event)
     {
         if (this._disabled)
             return false;
@@ -209,7 +209,7 @@ WK.Key.prototype = {
         return this._displayName;
     },
 
-    toString()
+    toString: function()
     {
         return this._displayName;
     }

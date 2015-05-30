@@ -61,7 +61,7 @@ WK.SearchBar.prototype = {
         this._searchInput.value = newText;
     },
 
-    focus()
+    focus: function()
     {
         this._searchInput.focus();
         this._searchInput.select();
@@ -69,12 +69,12 @@ WK.SearchBar.prototype = {
 
     // Private
 
-    _handleSearchEvent(event)
+    _handleSearchEvent: function(event)
     {
         this.dispatchEventToListeners(WK.SearchBar.Event.TextChanged);
     },
 
-    _handleKeydownEvent(event)
+    _handleKeydownEvent: function(event)
     {
         if (this._keyboardShortcutEsc.matchesEvent(event)) {
             if (this.delegate && typeof this.delegate.searchBarWantsToLoseFocus === "function") {
