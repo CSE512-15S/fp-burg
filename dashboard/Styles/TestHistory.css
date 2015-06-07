@@ -47,6 +47,7 @@ body {
     position: absolute;
     /* Keep in sync with table: width(first column) + 0.5 * width(other column) */
     left: 465px;
+    min-width: 400px;
 }
 
 h1 {
@@ -66,7 +67,6 @@ h1 span {
     font-size: 14px;
     max-width: 500px;
     margin-left: -50px;
-    margin-right: -50px;
     text-align: center;
 }
 
