@@ -70,6 +70,37 @@ h1 span {
     text-align: center;
 }
 
+.header-container .filter-description .filter-value {
+    padding: 2px;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.header-container .filter-description .filter-value.aggregate-outcome-pass {
+    color: rgb(47, 96, 25);
+    background-color: rgba(90, 187, 49, 0.35);
+}
+
+.header-container .filter-description .filter-value.aggregate-outcome-fail {
+    color: rgb(93, 15, 0);
+    background-color: rgba(178, 28, 0, 0.35);
+}
+
+.header-container .filter-description .filter-value.aggregate-outcome-timeout {
+    color: rgb(155, 104, 0);
+    background-color: rgba(255, 137, 0, 0.35);
+}
+
+.header-container .filter-description .filter-value.aggregate-outcome-crash {
+    color: rgb(112, 9, 159);
+    background-color: rgba(112, 9, 159, 0.35);
+}
+
+.header-container .filter-description .filter-value.aggregate-outcome-nodata {
+    color: rgb(100, 100, 100);
+    background-color: rgba(200, 200, 200, 0.35);
+}
+
 #content .settings-container {
     /* Keep in sync with table edge */
     position: absolute;
@@ -96,7 +127,6 @@ h1 span {
 }
 
 #content .builder-history-grid {
-
     position: absolute;
     top: 70px;
 

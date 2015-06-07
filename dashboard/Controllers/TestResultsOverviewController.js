@@ -136,19 +136,34 @@ WK.TestResultsOverviewController.prototype = {
 
     _descriptionForActiveFilters: function()
     {
-        function descriptionForSingleFilter(scopeBar) {
-            return _.map(scopeBar.selectedItems, function(item){
-                return item.label;
-            }).join(" | ");
-        }
+        var fragments = [];
 
-        return _.map(this._filterConfigs, function(config) {
+        _.each(this._filterConfigs, function(config, i, configs) {
             var selectedItems = config.filter.selectedItems;
             if (selectedItems.length === 1 && selectedItems[0].isExclusive)
-                return "Any " + config.label;
+                fragments.push(document.createTextNode("Any " + config.label));
+            else {
+                fragments.push(document.createTextNode(config.label + ": "));
 
-            return config.label + ": " + descriptionForSingleFilter(config.filter);
-        }).join(", ");
+                _.each(config.filter.selectedItems, function(item, j, items) {
+                    var span = document.createElement("span");
+                    span.textContent = item.label;
+                    span.className = "filter-value " + item.id;
+                    fragments.push(span);
+                    if (j < items.length - 1)
+                        fragments.push(document.createTextNode(" | "));
+                });
+            }
+
+            if (i < configs.length - 1)
+                fragments.push(document.createTextNode(", "));
+        });
+
+        var description = document.createElement("span");
+        for (var i = 0; i < fragments.length; ++i)
+            description.appendChild(fragments[i]);
+
+        return description;
     },
 
     _buildersListLoaded: function(builders)
@@ -178,7 +193,8 @@ WK.TestResultsOverviewController.prototype = {
                 return;
             }
         }
-        this._filterDescriptionElement.textContent = this._descriptionForActiveFilters();
+        this._filterDescriptionElement.removeChildren();
+        this._filterDescriptionElement.appendChild(this._descriptionForActiveFilters());
 
         this._populateResultsGrid();
     },
