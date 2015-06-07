@@ -31,6 +31,14 @@ WK.TestResult = function(duration, outcome)
     this.outcome = outcome;
 }
 
+WK.TestResult.AggregateOutcome = {
+    Pass: "aggregate-outcome-pass",
+    Fail: "aggregate-outcome-fail",
+    Timeout: "aggregate-outcome-timeout",
+    Crash: "aggregate-outcome-crash",
+    NoData: "aggregate-outcome-nodata", // Happens when a test isn't run for some reason.
+};
+
 WK.TestResult.Outcome = {
     Pass: "outcome-pass",
     FailText: "outcome-fail-text",

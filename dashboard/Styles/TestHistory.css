@@ -43,15 +43,17 @@ body {
     margin: 20px 0px 40px;
 }
 
-h1 {
-    margin-bottom: 5px;
-    font-size: 24px;
-    font-weight: normal;
-    text-align: left;
-
+#content .header-container {
     position: absolute;
     /* Keep in sync with table: width(first column) + 0.5 * width(other column) */
     left: 465px;
+}
+
+h1 {
+    margin: 5px 0;
+    font-size: 24px;
+    font-weight: normal;
+    text-align: left;
 }
 
 h1 span {
@@ -60,10 +62,18 @@ h1 span {
     line-height: 24px;
 }
 
+#content .header-container .filter-description {
+    font-size: 14px;
+    max-width: 500px;
+    margin-left: -50px;
+    margin-right: -50px;
+    text-align: center;
+}
+
 #content .settings-container {
     /* Keep in sync with table edge */
     position: absolute;
-    top: 20px;
+    top: 10px;
     left: 20px;
     width: 400px;
 }

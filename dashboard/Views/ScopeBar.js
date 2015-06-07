@@ -51,6 +51,11 @@ WK.ScopeBar.prototype = {
         return this._defaultItem;
     },
 
+    get items()
+    {
+        return this._items.slice();
+    },
+
     item: function(id)
     {
         return this._itemsById[id];

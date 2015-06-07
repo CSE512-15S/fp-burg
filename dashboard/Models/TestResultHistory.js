@@ -29,6 +29,37 @@ WK.TestResultHistory = function(runs, results, resultsCounts) {
     this._runs = runs;
     this._results = results;
     this._resultsCounts = resultsCounts;
+
+    this._seenOutcomes = {};
+    for (var key in WK.TestResult.AggregateOutcome)
+        this._seenOutcomes[WK.TestResult.AggregateOutcome[key]] = false;
+
+    for (var i = 0; i < this._results.length; ++i) {
+        var outcome = null;
+        switch (this._results[i].outcome) {
+        case WK.TestResult.Outcome.Pass:
+            outcome = WK.TestResult.AggregateOutcome.Pass; break;
+        case WK.TestResult.Outcome.FailText:
+            outcome = WK.TestResult.AggregateOutcome.Fail; break;
+        case WK.TestResult.Outcome.FailImage:
+            outcome = WK.TestResult.AggregateOutcome.Fail; break;
+        case WK.TestResult.Outcome.FailAudio:
+            outcome = WK.TestResult.AggregateOutcome.Fail; break;
+        case WK.TestResult.Outcome.Timeout:
+            outcome = WK.TestResult.AggregateOutcome.Timeout; break;
+        case WK.TestResult.Outcome.Crash:
+            outcome = WK.TestResult.AggregateOutcome.Crash; break;
+        case WK.TestResult.Outcome.Skip:
+            outcome = WK.TestResult.AggregateOutcome.NoData; break;
+        case WK.TestResult.Outcome.Missing:
+            outcome = WK.TestResult.AggregateOutcome.NoData; break;
+        case WK.TestResult.Outcome.NoData:
+            outcome = WK.TestResult.AggregateOutcome.NoData; break;
+        default: console.error("Unknown outcome: " + this._results[i].outcome);
+        }
+
+        this._seenOutcomes[outcome] = true;
+    }
 }
 
 WK.TestResultHistory.prototype = {
@@ -38,6 +69,14 @@ WK.TestResultHistory.prototype = {
     get runs()
     {
         return this._runs;
+    },
+
+    containsOutcome: function(outcome)
+    {
+        if (outcome in this._seenOutcomes)
+            return this._seenOutcomes[outcome];
+
+        return false;
     },
 
     forEachSingleResult: function(callback) {

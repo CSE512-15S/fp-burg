@@ -38,13 +38,22 @@ WK.TestResultsOverviewController = function() {
 
     // Build the UI skeleton.
     this.element = document.getElementById("content");
+    var headerContainer = document.createElement("div");
+    headerContainer.className = "header-container";
+    this.element.appendChild(headerContainer);
+
     var headerElement = document.createElement("h1");
     headerElement.textContent = "Test Results History";
-    this.element.appendChild(headerElement);
+    headerContainer.appendChild(headerElement);
 
     this._headerIntervalLabelElement = document.createElement("span");
     this._headerIntervalLabelElement.textContent = "(loading)";
     headerElement.appendChild(this._headerIntervalLabelElement);
+
+    this._filterDescriptionElement = document.createElement("div");
+    this._filterDescriptionElement.className = "filter-description";
+    this._filterDescriptionElement.textContent = "Showing: ";
+    headerContainer.appendChild(this._filterDescriptionElement);
 
     var settingsContainer = this.settingsContainerElement = document.createElement("div");
     this.settingsContainerElement.className = "settings-container";
@@ -52,20 +61,22 @@ WK.TestResultsOverviewController = function() {
 
     var resultTypes = [
         new WK.ScopeBarItem("any-result", "Any", true),
-        new WK.ScopeBarItem("pass", "Pass"),
-        new WK.ScopeBarItem("fail", "Fail"),
-        new WK.ScopeBarItem("crash", "Crash"),
-        new WK.ScopeBarItem("timeout", "Timeout")
+        new WK.ScopeBarItem(WK.TestResult.AggregateOutcome.Pass, "Pass"),
+        new WK.ScopeBarItem(WK.TestResult.AggregateOutcome.Fail, "Fail"),
+        new WK.ScopeBarItem(WK.TestResult.AggregateOutcome.Crash, "Crash"),
+        new WK.ScopeBarItem(WK.TestResult.AggregateOutcome.Timeout, "Timeout")
     ];
     this._resultTypeFilter = new WK.ScopeBar("test-result-type", resultTypes, resultTypes[0]);
+    this._resultTypeFilter.addEventListener(WK.ScopeBar.Event.SelectionChanged, this._filtersChanged, this);
 
-   var problemTypes = [
+    var problemTypes = [
         new WK.ScopeBarItem("any-problem", "Any", true),
         new WK.ScopeBarItem("flaky", "Flaky"),
         new WK.ScopeBarItem("slow", "Slow"),
         new WK.ScopeBarItem("wrong-result", "Unexpected"),
     ];
     this._problemTypeFilter = new WK.ScopeBar("problem-type", problemTypes, problemTypes[0]);
+    this._problemTypeFilter.addEventListener(WK.ScopeBar.Event.SelectionChanged, this._filtersChanged, this);
 
     this._filterConfigs = [
         {label: "Result", filter: this._resultTypeFilter},
@@ -96,6 +107,7 @@ WK.TestResultsOverviewController = function() {
     this.element.appendChild(this._gridView.element);
 
     // Set up initial view state.
+    this._filtersChanged();
 }
 
 WK.TestResultsOverviewController.prototype = {
@@ -127,10 +139,14 @@ WK.TestResultsOverviewController.prototype = {
         function descriptionForSingleFilter(scopeBar) {
             return _.map(scopeBar.selectedItems, function(item){
                 return item.label;
-            }).join("+");
+            }).join(" | ");
         }
 
         return _.map(this._filterConfigs, function(config) {
+            var selectedItems = config.filter.selectedItems;
+            if (selectedItems.length === 1 && selectedItems[0].isExclusive)
+                return "Any " + config.label;
+
             return config.label + ": " + descriptionForSingleFilter(config.filter);
         }).join(", ");
     },
@@ -151,6 +167,22 @@ WK.TestResultsOverviewController.prototype = {
         Promise.all(histories).then(this._populateResultsGrid.bind(this));
     },
 
+    _filtersChanged: function(event)
+    {
+        event = event || {};
+
+        if (event.target instanceof WK.ScopeBar) {
+            var filter = event.target;
+            if (filter.selectedItems.length === filter.items.length - 1) {
+                filter.items[0].selected = true;
+                return;
+            }
+        }
+        this._filterDescriptionElement.textContent = this._descriptionForActiveFilters();
+
+        this._populateResultsGrid();
+    },
+
     _populateResultsGrid: function()
     {
         var testsToDisplay = [];
@@ -159,6 +191,20 @@ WK.TestResultsOverviewController.prototype = {
             testsToDisplay = this._testIndex.testsMatchingSearchString(searchString);
         else
             testsToDisplay = this._testIndex.allTests;
+
+        testsToDisplay = _.filter(testsToDisplay, function(test) {
+            var testResults = this._testIndex.findResultsForTest(test);
+            var allowedOutcomes = this._resultTypeFilter.selectedItems;
+
+            for (var testHistory of testResults.values()) {
+                for (var outcome of allowedOutcomes) {
+                    if (outcome.label === "Any" || testHistory.containsOutcome(outcome.id))
+                        return true;
+                }
+            }
+
+            return false;
+        }, this);
 
         testsToDisplay = _.sortBy(testsToDisplay, "fullName");
 
