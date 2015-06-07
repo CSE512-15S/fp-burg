@@ -34,11 +34,58 @@ WK.TestResultsOverviewController = function() {
 
     this._testIndex = new WK.TestResultIndex();
 
+    this._maxTestRuns = 0;
+
     // Build the UI skeleton.
     this.element = document.getElementById("content");
     var headerElement = document.createElement("h1");
     headerElement.textContent = "Test Results History";
     this.element.appendChild(headerElement);
+
+    this._headerIntervalLabelElement = document.createElement("span");
+    this._headerIntervalLabelElement.textContent = "(loading)";
+    headerElement.appendChild(this._headerIntervalLabelElement);
+
+    var settingsContainer = this.settingsContainerElement = document.createElement("div");
+    this.settingsContainerElement.className = "settings-container";
+    this.element.appendChild(this.settingsContainerElement);
+
+    var resultTypes = [
+        new WK.ScopeBarItem("any-result", "Any", true),
+        new WK.ScopeBarItem("pass", "Pass"),
+        new WK.ScopeBarItem("fail", "Fail"),
+        new WK.ScopeBarItem("crash", "Crash"),
+        new WK.ScopeBarItem("timeout", "Timeout")
+    ];
+    this._resultTypeFilter = new WK.ScopeBar("test-result-type", resultTypes, resultTypes[0]);
+
+   var problemTypes = [
+        new WK.ScopeBarItem("any-problem", "Any", true),
+        new WK.ScopeBarItem("flaky", "Flaky"),
+        new WK.ScopeBarItem("slow", "Slow"),
+        new WK.ScopeBarItem("wrong-result", "Unexpected"),
+    ];
+    this._problemTypeFilter = new WK.ScopeBar("problem-type", problemTypes, problemTypes[0]);
+
+    this._filterConfigs = [
+        {label: "Result", filter: this._resultTypeFilter},
+        {label: "Problem", filter: this._problemTypeFilter}
+    ];
+
+    function createRowForFilter(config) {
+        var row = document.createElement("div");
+        row.className = "filter-setting row";
+        var label = document.createElement("span");
+        label.className = "row-label";
+        label.textContent = config.label;
+        row.appendChild(label);
+        row.appendChild(config.filter.element);
+        return row;
+    }
+
+    _.chain(this._filterConfigs)
+     .map(createRowForFilter)
+     .each(function(row) { settingsContainer.appendChild(row); });
 
     var suppressIncrementalSearch = true;
     this._searchBar = new WK.SearchBar("filter-test-name", "Search Tests", this, suppressIncrementalSearch);
@@ -61,7 +108,6 @@ WK.TestResultsOverviewController.prototype = {
         return this._testIndex;
     },
 
-
     // Protected delegates
 
     searchBarDidActivate: function()
@@ -74,6 +120,19 @@ WK.TestResultsOverviewController.prototype = {
     _searchBarTextChanged: function()
     {
         this._populateResultsGrid();
+    },
+
+    _descriptionForActiveFilters: function()
+    {
+        function descriptionForSingleFilter(scopeBar) {
+            return _.map(scopeBar.selectedItems, function(item){
+                return item.label;
+            }).join("+");
+        }
+
+        return _.map(this._filterConfigs, function(config) {
+            return config.label + ": " + descriptionForSingleFilter(config.filter);
+        }).join(", ");
     },
 
     _buildersListLoaded: function(builders)
@@ -114,5 +173,8 @@ WK.TestResultsOverviewController.prototype = {
         history.resultsByTest.forEach(function(result, test) {
             this._testIndex.findResultsForTest(test).set(history.builder, result);
         }, this);
+
+        this._maxTestRuns = Math.max(this._maxTestRuns, history.runs.length);
+        this._headerIntervalLabelElement.textContent = "(Last " + this._maxTestRuns + " Runs)";
     }
 };

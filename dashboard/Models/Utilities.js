@@ -151,6 +151,56 @@ Object.defineProperty(Node.prototype, "enclosingNodeOrSelfWithClass",
     }
 });
 
+Object.defineProperty(Object, "shallowCopy",
+{
+    value: function(object)
+    {
+        // Make a new object and copy all the key/values. The values are not copied.
+        var copy = {};
+        var keys = Object.keys(object);
+        for (var i = 0; i < keys.length; ++i)
+            copy[keys[i]] = object[keys[i]];
+        return copy;
+    }
+});
+
+Object.defineProperty(Object, "shallowEqual",
+{
+    value: function(a, b)
+    {
+        // Checks if two objects have the same top-level properties.
+
+        // Check for strict equality in case they are the same object.
+        if (a === b)
+            return true;
+
+        // Only objects can proceed. null is an object, but Object.keys throws for null.
+        if (typeof a !== "object" || typeof b !== "object" || a === null || b === null)
+            return false;
+
+        var aKeys = Object.keys(a);
+        var bKeys = Object.keys(b);
+
+        // Check that each object has the same number of keys.
+        if (aKeys.length !== bKeys.length)
+            return false;
+
+        // Check if all the keys and their values are equal.
+        for (var i = 0; i < aKeys.length; ++i) {
+            // Check that b has the same key as a.
+            if (!(aKeys[i] in b))
+                return false;
+
+            // Check that the values are strict equal since this is only
+            // a shallow check, not a recursive one.
+            if (a[aKeys[i]] !== b[aKeys[i]])
+                return false;
+        }
+
+        return true;
+    }
+});
+
 Element.prototype.removeChildren = function()
 {
     // This has been tested to be the fastest removal method.
