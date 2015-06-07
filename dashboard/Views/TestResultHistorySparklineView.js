@@ -28,7 +28,7 @@ WK.TestResultHistorySparklineView = function(testResults) {
 
     console.assert(testResults instanceof WK.TestResultHistory, testResults);
 
-    this._results = testResults;
+    this._results = this.representedObject = testResults;
 
     this.element = document.createElement("div");
     this.element.className = "test-results-sparkline";
@@ -38,6 +38,12 @@ WK.TestResultHistorySparklineView = function(testResults) {
     this._boundRenderFunction = this.render.bind(this);
     this.renderSoon();
 };
+
+WK.Object.addConstructorFunctions(WK.TestResultHistorySparklineView);
+
+WK.TestResultHistorySparklineView.Event = {
+    Clicked: "sparkline-view-clicked"
+}
 
 WK.TestResultHistorySparklineView.prototype = {
     __proto__: WK.Object.prototype,
@@ -144,6 +150,7 @@ WK.TestResultHistorySparklineView.prototype = {
 
     _sparklineClicked: function(event)
     {
-        console.log("relevant data: ", this._results);
+        event.stopPropagation();
+        this.dispatchEventToListeners(WK.TestResultHistorySparklineView.Event.Clicked);
     }
 };

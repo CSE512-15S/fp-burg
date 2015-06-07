@@ -151,6 +151,23 @@ Object.defineProperty(Node.prototype, "enclosingNodeOrSelfWithClass",
     }
 });
 
+Object.defineProperty(Node.prototype, "enclosingNodeOrSelfWithTagName",
+{
+    value: function(tagName)
+    {
+        if (!tagName)
+            return null;
+
+        // If the document is XHTML instead of HTML, tag names could be lowercase. Don't risk it.
+        tagName = tagName.toUpperCase();
+
+        for (var node = this; node && node !== this.ownerDocument; node = node.parentNode)
+            if (node.tagName.toUpperCase() === tagName)
+                return node;
+        return null;
+    }
+});
+
 Object.defineProperty(Object, "shallowCopy",
 {
     value: function(object)

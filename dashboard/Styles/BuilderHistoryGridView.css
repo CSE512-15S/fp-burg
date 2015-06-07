@@ -88,3 +88,18 @@ table.builder-history-grid tbody td {
 table.builder-history-grid tbody tr:nth-of-type(2n + 1) {
     background-color: #e5e1da;
 }
+
+
+table.builder-history-grid tbody tr:hover {
+    background-color: rgb(223, 218, 209);
+}
+
+table.builder-history-grid tbody tr:hover td:first-of-type {
+    text-decoration: underline;
+    cursor: pointer;
+    color: rgb(45, 45, 45);
+}
+
+table.builder-history-grid tbody tr:hover td:not(:first-of-type) {
+    color: rgb(92, 92, 92);
+}

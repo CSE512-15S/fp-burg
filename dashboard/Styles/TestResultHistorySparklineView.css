@@ -24,8 +24,16 @@
  */
 
 .test-results-sparkline {
-    max-width: 130px;
-    margin: auto;
+    width: 126px;
+    margin: 0;
+    filter: saturate(150%);
+    -webkit-filter: saturate(150%);
+    cursor: pointer;
+    cursor: -webkit-zoom-in;
+}
+
+.test-results-sparkline:hover {
+    border-color: #ccc;
 }
 
 line.repeat-lines {

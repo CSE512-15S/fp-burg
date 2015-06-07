@@ -36,12 +36,20 @@ WK.BuilderHistoryGridView = function(delegate) {
     this.element = document.createElement("table");
     this.element.className = "builder-history-grid";
 
+    this.element.addEventListener("click", this._clickedWithinTableElement.bind(this));
+    WK.TestResultHistorySparklineView.addEventListener(WK.TestResultHistorySparklineView.Event.Clicked, this._sparklineClicked, this);
+
     this.cornerElement = document.createElement("th");
 
     this._boundRenderFunction = this.render.bind(this);
     this._boundRenderTableRowsIncrementally = this._renderTableRowsIncrementally.bind(this);
 
     this._rowRenderIndex = 0;
+};
+
+WK.BuilderHistoryGridView.Event = {
+    TestHistorySelected: "test-history-selected",
+    TestSelected: "test-selected"
 };
 
 WK.BuilderHistoryGridView.prototype = {
@@ -122,6 +130,8 @@ WK.BuilderHistoryGridView.prototype = {
         this._renderTableRowsIncrementally();
     },
 
+    // Private
+
     _renderTableRowsIncrementally: function() {
         var rowsPerChunk = 5;
         var i = 0;
@@ -130,6 +140,7 @@ WK.BuilderHistoryGridView.prototype = {
             var testResults = this._delegate.testIndex.findResultsForTest(test);
 
             var tr = document.createElement("tr");
+            tr.representedTest = test;
             var tdtest = document.createElement("td");
             tdtest.textContent = test.trimmedName(65);
             tr.appendChild(tdtest);
@@ -154,5 +165,21 @@ WK.BuilderHistoryGridView.prototype = {
 
         if (this._rowRenderIndex < this._tests.length)
             requestAnimationFrame(this._boundRenderTableRowsIncrementally);
+    },
+
+    _sparklineClicked: function(event)
+    {
+        var sparkline = event.target;
+        if (sparkline.element.enclosingNodeOrSelfWithClass("builder-history-grid") !== this.element)
+            return;
+
+        console.log("Test result selected", sparkline.representedObject);
+    },
+
+    _clickedWithinTableElement: function(event)
+    {
+        var enclosingRow = event.target.enclosingNodeOrSelfWithTagName("tr");
+        if (enclosingRow && enclosingRow.firstChild === event.target)
+            console.log("Test selected", enclosingRow.representedTest);
     }
 };
