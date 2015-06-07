@@ -27,16 +27,25 @@ var WK = WK || {};
 
 WK.TestResultIndex = function()
 {
+    WK.Object.call(this);
+
     this.testsByName = new Map;
     this._allTests = [];
+    this._allBuilders = [];
 
     // Allows lookup by Test and Builder:
     // Map(Test -> Map(Builder -> TestResultHistory))
     this.resultsByTest = new Map;
+
+    this._maxTestRuns = 0;
+}
+
+WK.TestResultIndex.Event = {
+    BuildersChanged: "test-index-builders-changed",
 }
 
 WK.TestResultIndex.prototype = {
-    __proto__: WK.Object,
+    __proto__: WK.Object.prototype,
     constructor: WK.TestResultIndex,
 
     // Public
@@ -44,6 +53,25 @@ WK.TestResultIndex.prototype = {
     get allTests()
     {
         return this._allTests;
+    },
+
+    get maxTestRuns()
+    {
+        return this._maxTestRuns;
+    },
+
+    get builders()
+    {
+        return this._allBuilders.slice();
+    },
+
+    set builders(value)
+    {
+        if (this._allBuilders === value)
+            return;
+
+        this._allBuilders = value || [];
+        this.dispatchEventToListeners(WK.TestResultIndex.Event.BuildersChanged);
     },
 
     // Maybe when a decent fuzzy matching library comes out, we can use it.
@@ -67,6 +95,12 @@ WK.TestResultIndex.prototype = {
         }
 
         return this.testsByName.get(name);
+    },
+
+    addBuilderResultsForTest: function(test, history, result)
+    {
+        this._maxTestRuns = Math.max(this._maxTestRuns, history.runs.length);
+        this.findResultsForTest(test).set(history.builder, result);
     },
 
     findResultsForTest: function(testOrName)

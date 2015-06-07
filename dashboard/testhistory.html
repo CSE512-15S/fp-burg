@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>WebKit Build Dashboard: Test History</title>
-    <link rel="stylesheet" href="Styles/BuilderHistoryGridView.css"></link>
     <link rel="stylesheet" href="Styles/ScopeBar.css"></link>
     <link rel="stylesheet" href="Styles/TestHistory.css"></link>
+    <link rel="stylesheet" href="Styles/TestHistoryOverview.css"></link>
+    <link rel="stylesheet" href="Styles/TestHistoryOverviewGrid.css"></link>
     <link rel="stylesheet" href="Styles/TestResultHistorySparklineView.css"></link>
 
     <script src="External/underscore-min.js"></script>
@@ -30,13 +31,14 @@
 
     <script src="Views/NavigationItem.js"></script>
 
-    <script src="Views/BuilderHistoryGridView.js"></script>
     <script src="Views/SearchBar.js"></script>
     <script src="Views/ScopeBar.js"></script>
     <script src="Views/ScopeBarItem.js"></script>
+    <script src="Views/TestHistoryOverview.js"></script>
+    <script src="Views/TestHistoryOverviewGrid.js"></script>
     <script src="Views/TestResultHistorySparklineView.js"></script>
 
-    <script src="Controllers/TestResultsOverviewController.js"></script>
+    <script src="Controllers/TestHistoryController.js"></script>
 </head>
 <body>
 
@@ -44,7 +46,7 @@
 
 <script type="text/javascript">
 document.addEventListener("DOMContentLoaded", function() {
-    var app = window.dashboardApp = new WK.TestResultsOverviewController();
+    var app = window.dashboardApp = new WK.TestHistoryController();
 });
 </script>
 </body>

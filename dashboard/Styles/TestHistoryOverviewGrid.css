@@ -23,31 +23,34 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-table.builder-history-grid {
+table.test-history-overview-grid {
     table-layout: fixed;
     width: 100%;
     border-collapse: collapse;
+
+    top: 70px;
+    position: absolute;
 }
 
-table.builder-history-grid col:first-of-type,
-table.builder-history-grid th:first-of-type,
-table.builder-history-grid td:first-of-type {
+table.test-history-overview-grid col:first-of-type,
+table.test-history-overview-grid th:first-of-type,
+table.test-history-overview-grid td:first-of-type {
     width: 400px;
 }
 
-table.builder-history-grid th:first-of-type,
-table.builder-history-grid td:first-of-type {
+table.test-history-overview-grid th:first-of-type,
+table.test-history-overview-grid td:first-of-type {
     text-align: left;
     font-size: 12px;
 }
 
-table.builder-history-grid td:first-of-type {
+table.test-history-overview-grid td:first-of-type {
     text-overflow: ellipsis;
     overflow: hidden;
     padding-left: 0.5em;
 }
 
-table.builder-history-grid th:first-of-type input[type="search"] {
+table.test-history-overview-grid th:first-of-type input[type="search"] {
     font-family: 'Helvetica Neue', Helvetica, sans-serif !important;
     font-size: 14px !important;
     width: 370px;
@@ -62,44 +65,44 @@ table.builder-history-grid th:first-of-type input[type="search"] {
     -webkit-appearance: none;
 }
 
-table.builder-history-grid th:first-of-type input[type="search"]:focus {
+table.test-history-overview-grid th:first-of-type input[type="search"]:focus {
     border: 1px solid #999;
 }
 
-table.builder-history-grid td:not(:first-of-type) {
+table.test-history-overview-grid td:not(:first-of-type) {
     text-align: center;
     color: #aaa;
     font-size: 10px;
     border-left: 2px solid transparent;
 }
 
-table.builder-history-grid col:not(:first-of-type) {
+table.test-history-overview-grid col:not(:first-of-type) {
     width: 130px;
 }
 
-table.builder-history-grid thead {
+table.test-history-overview-grid thead {
     font-size: 12px;
 }
 
-table.builder-history-grid tbody td {
+table.test-history-overview-grid tbody td {
     height: 24px;
 }
 
-table.builder-history-grid tbody tr:nth-of-type(2n + 1) {
+table.test-history-overview-grid tbody tr:nth-of-type(2n + 1) {
     background-color: #e5e1da;
 }
 
 
-table.builder-history-grid tbody tr:hover {
+table.test-history-overview-grid tbody tr:hover {
     background-color: rgb(223, 218, 209);
 }
 
-table.builder-history-grid tbody tr:hover td:first-of-type {
+table.test-history-overview-grid tbody tr:hover td:first-of-type {
     text-decoration: underline;
     cursor: pointer;
     color: rgb(45, 45, 45);
 }
 
-table.builder-history-grid tbody tr:hover td:not(:first-of-type) {
+table.test-history-overview-grid tbody tr:hover td:not(:first-of-type) {
     color: rgb(92, 92, 92);
 }

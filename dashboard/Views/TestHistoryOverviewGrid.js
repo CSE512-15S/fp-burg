@@ -23,18 +23,18 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WK.BuilderHistoryGridView = function(delegate) {
+WK.TestHistoryOverviewGrid = function(testIndex) {
     WK.Object.call(this);
 
-    console.assert(delegate);
+    console.assert(testIndex);
 
-    this._delegate = delegate;
+    this._testIndex = testIndex;
 
     this._builders = [];
     this._tests = [];
 
     this.element = document.createElement("table");
-    this.element.className = "builder-history-grid";
+    this.element.className = "test-history-overview-grid";
 
     this.element.addEventListener("click", this._clickedWithinTableElement.bind(this));
     WK.TestResultHistorySparklineView.addEventListener(WK.TestResultHistorySparklineView.Event.Clicked, this._sparklineClicked, this);
@@ -47,14 +47,14 @@ WK.BuilderHistoryGridView = function(delegate) {
     this._rowRenderIndex = 0;
 };
 
-WK.BuilderHistoryGridView.Event = {
+WK.TestHistoryOverviewGrid.Event = {
     TestHistorySelected: "test-history-selected",
     TestSelected: "test-selected"
 };
 
-WK.BuilderHistoryGridView.prototype = {
+WK.TestHistoryOverviewGrid.prototype = {
     __proto__: WK.Object.prototype,
-    constructor: WK.BuilderHistoryGridView,
+    constructor: WK.TestHistoryOverviewGrid,
 
     // Public
 
@@ -96,8 +96,6 @@ WK.BuilderHistoryGridView.prototype = {
         if (!this._tests.length || !this._builders.length)
             return;
 
-        console.log("rendering");
-
         this.element.removeChildren();
 
         // Fixing the maximum width avoids spreading inter-column widths at large sizes.
@@ -137,7 +135,7 @@ WK.BuilderHistoryGridView.prototype = {
         var i = 0;
         while (i < rowsPerChunk && this._rowRenderIndex + i < this._tests.length) {
             var test = this._tests[this._rowRenderIndex + i];
-            var testResults = this._delegate.testIndex.findResultsForTest(test);
+            var testResults = this._testIndex.findResultsForTest(test);
 
             var tr = document.createElement("tr");
             tr.representedTest = test;
@@ -170,7 +168,7 @@ WK.BuilderHistoryGridView.prototype = {
     _sparklineClicked: function(event)
     {
         var sparkline = event.target;
-        if (sparkline.element.enclosingNodeOrSelfWithClass("builder-history-grid") !== this.element)
+        if (sparkline.element.enclosingNodeOrSelfWithClass("test-history-overview-grid") !== this.element)
             return;
 
         console.log("Test result selected", sparkline.representedObject);

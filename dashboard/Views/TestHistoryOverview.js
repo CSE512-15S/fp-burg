@@ -23,20 +23,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WK.TestResultsOverviewController = function() {
+WK.TestHistoryOverview = function(testIndex) {
     WK.Object.call(this);
 
-    // First, set up data sources.
-    this._builderHistoryDataSource = new WK.BuilderHistoryDataSource(this, "https://webkit-test-results.appspot.com/");
-    this._builderListDataSource = new WK.BuilderListDataSource("./Legacy/builders.jsonp");
-    this._builderListDataSource.loadBuilders()
-        .then(this._buildersListLoaded.bind(this));
+    this._testIndex = testIndex;
 
-    this._testIndex = new WK.TestResultIndex();
+    // TODO: move the header stuff to the main view.
 
-    this._maxTestRuns = 0;
-
-    // Build the UI skeleton.
     this.element = document.getElementById("content");
     var headerContainer = document.createElement("div");
     headerContainer.className = "header-container";
@@ -50,10 +43,12 @@ WK.TestResultsOverviewController = function() {
     this._headerIntervalLabelElement.textContent = "(loading)";
     headerElement.appendChild(this._headerIntervalLabelElement);
 
-    this._filterDescriptionElement = document.createElement("div");
-    this._filterDescriptionElement.className = "filter-description";
-    this._filterDescriptionElement.textContent = "Showing: ";
-    headerContainer.appendChild(this._filterDescriptionElement);
+    // ---
+
+    this.viewLabelElement = document.createElement("div");
+    this.viewLabelElement.className = "dashboard-view-label";
+    this.viewLabelElement.textContent = "Showing: ";
+    headerContainer.appendChild(this.viewLabelElement);
 
     var settingsContainer = this.settingsContainerElement = document.createElement("div");
     this.settingsContainerElement.className = "settings-container";
@@ -102,22 +97,52 @@ WK.TestResultsOverviewController = function() {
     this._searchBar = new WK.SearchBar("filter-test-name", "Search Tests", this, suppressIncrementalSearch);
     this._searchBar.addEventListener(WK.SearchBar.Event.TextChanged, this._searchBarTextChanged, this);
 
-    this._gridView = new WK.BuilderHistoryGridView(this);
+    this._gridView = new WK.TestHistoryOverviewGrid(this._testIndex);
     this._gridView.cornerElement.appendChild(this._searchBar.element);
     this.element.appendChild(this._gridView.element);
 
+    this._testIndex.addEventListener(WK.TestResultIndex.Event.BuildersChanged, this._buildersChanged, this);
+
     // Set up initial view state.
+    this._buildersChanged();
     this._filtersChanged();
 }
 
-WK.TestResultsOverviewController.prototype = {
+WK.TestHistoryOverview.prototype = {
     __proto__: WK.Object.prototype,
-    constructor: WK.TestResultsOverviewController,
+    constructor: WK.TestHistoryOverview,
 
     // Public
-    get testIndex()
+
+    refresh: function()
     {
-        return this._testIndex;
+        var testsToDisplay = [];
+        var searchString = this._searchBar.text;
+        if (searchString.length)
+            testsToDisplay = this._testIndex.testsMatchingSearchString(searchString);
+        else
+            testsToDisplay = this._testIndex.allTests;
+
+        testsToDisplay = _.filter(testsToDisplay, function(test) {
+            var testResults = this._testIndex.findResultsForTest(test);
+            var allowedOutcomes = this._resultTypeFilter.selectedItems;
+
+            for (var testHistory of testResults.values()) {
+                for (var outcome of allowedOutcomes) {
+                    if (outcome.label === "Any" || testHistory.containsOutcome(outcome.id))
+                        return true;
+                }
+            }
+
+            return false;
+        }, this);
+
+        // TODO: more filters go here.
+
+        testsToDisplay = _.sortBy(testsToDisplay, "fullName");
+
+        this._gridView.tests = testsToDisplay;
+        this._headerIntervalLabelElement.textContent = "(Last " + this._testIndex.maxTestRuns + " Runs)";
     },
 
     // Protected delegates
@@ -131,7 +156,7 @@ WK.TestResultsOverviewController.prototype = {
 
     _searchBarTextChanged: function()
     {
-        this._populateResultsGrid();
+        this.refresh();
     },
 
     _descriptionForActiveFilters: function()
@@ -166,22 +191,6 @@ WK.TestResultsOverviewController.prototype = {
         return description;
     },
 
-    _buildersListLoaded: function(builders)
-    {
-        this._builders = builders;
-
-        // FIXME: more intelligent show/hide of platforms, builders, configurations.
-        var buildersToDisplay = builders.slice(0, 6);
-        this._gridView.builders = buildersToDisplay;
-
-        var histories = _.map(buildersToDisplay, function(builder) {
-            return this._builderHistoryDataSource.fetchHistoryForBuilder(builder)
-                .then(this._updateTestIndicesFromHistory.bind(this));
-        }, this);
-
-        Promise.all(histories).then(this._populateResultsGrid.bind(this));
-    },
-
     _filtersChanged: function(event)
     {
         event = event || {};
@@ -193,50 +202,15 @@ WK.TestResultsOverviewController.prototype = {
                 return;
             }
         }
-        this._filterDescriptionElement.removeChildren();
-        this._filterDescriptionElement.appendChild(this._descriptionForActiveFilters());
+        this.viewLabelElement.removeChildren();
+        this.viewLabelElement.appendChild(this._descriptionForActiveFilters());
 
-        this._populateResultsGrid();
+        this.refresh();
     },
 
-    _populateResultsGrid: function()
+    _buildersChanged: function(event)
     {
-        var testsToDisplay = [];
-        var searchString = this._searchBar.text;
-        if (searchString.length)
-            testsToDisplay = this._testIndex.testsMatchingSearchString(searchString);
-        else
-            testsToDisplay = this._testIndex.allTests;
-
-        testsToDisplay = _.filter(testsToDisplay, function(test) {
-            var testResults = this._testIndex.findResultsForTest(test);
-            var allowedOutcomes = this._resultTypeFilter.selectedItems;
-
-            for (var testHistory of testResults.values()) {
-                for (var outcome of allowedOutcomes) {
-                    if (outcome.label === "Any" || testHistory.containsOutcome(outcome.id))
-                        return true;
-                }
-            }
-
-            return false;
-        }, this);
-
-        testsToDisplay = _.sortBy(testsToDisplay, "fullName");
-
-        // TODO: more filters go here.
-        this._gridView.tests = testsToDisplay;
-    },
-
-    _updateTestIndicesFromHistory: function(history)
-    {
-        console.assert(history instanceof WK.BuilderHistory, history);
-
-        history.resultsByTest.forEach(function(result, test) {
-            this._testIndex.findResultsForTest(test).set(history.builder, result);
-        }, this);
-
-        this._maxTestRuns = Math.max(this._maxTestRuns, history.runs.length);
-        this._headerIntervalLabelElement.textContent = "(Last " + this._maxTestRuns + " Runs)";
+        this._gridView.builders = this._testIndex.builders;
+        this.refresh();
     }
 };

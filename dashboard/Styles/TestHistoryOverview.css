@@ -24,48 +24,64 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-body {
-    margin-top: 15px;
-    font-family: "Helvetica Neue", Helvetica, sans-serif;
-    background-color: #E9E7DF;
-    color: #5C5C5C;
+
+.header-container .dashboard-view-label .filter-value {
+    padding: 2px;
+    font-weight: bold;
+    font-size: 12px;
 }
 
-#content {
-    position: relative;
-    margin: auto 20px auto 10px;
+.header-container .dashboard-view-label .filter-value.aggregate-outcome-pass {
+    color: rgb(47, 96, 25);
+    background-color: rgba(90, 187, 49, 0.35);
 }
 
-#content > hr {
-    height: 2px;
-    border: none;
-    background-color: #9C9C9C;
-    margin: 20px 0px 40px;
+.header-container .dashboard-view-label .filter-value.aggregate-outcome-fail {
+    color: rgb(93, 15, 0);
+    background-color: rgba(178, 28, 0, 0.35);
 }
 
-#content .header-container {
+.header-container .dashboard-view-label .filter-value.aggregate-outcome-timeout {
+    color: rgb(155, 104, 0);
+    background-color: rgba(255, 137, 0, 0.35);
+}
+
+.header-container .dashboard-view-label .filter-value.aggregate-outcome-crash {
+    color: rgb(112, 9, 159);
+    background-color: rgba(112, 9, 159, 0.35);
+}
+
+.header-container .dashboard-view-label .filter-value.aggregate-outcome-nodata {
+    color: rgb(100, 100, 100);
+    background-color: rgba(200, 200, 200, 0.35);
+}
+
+#content .settings-container {
+    /* Keep in sync with table edge */
     position: absolute;
-    /* Keep in sync with table: width(first column) + 0.5 * width(other column) */
-    left: 465px;
-    min-width: 400px;
+    top: 10px;
+    left: 20px;
+    width: 400px;
 }
 
-#content .header-container h1 {
-    margin: 5px 0;
-    font-size: 24px;
-    font-weight: normal;
-    text-align: left;
+#content .settings-container > div.row .scope-bar {
+    display: inline;
+    left: 50px;
+    position: absolute;
 }
 
-#content .header-container h1 span {
-    margin-left: 10px;
-    font-size: 16px;
-    line-height: 24px;
+#content .settings-container > div.row {
+    position: relative;
+    height: 22px;
 }
 
-#content .header-container .dashboard-view-label {
-    font-size: 14px;
-    max-width: 500px;
-    margin-left: -50px;
-    text-align: center;
+#content .settings-container > div.row .row-label {
+    font-weight: bold;
+    font-size: 12px;
+    text-align: right;
+}
+
+#content .test-history-grid {
+    position: absolute;
+    top: 70px;
 }
