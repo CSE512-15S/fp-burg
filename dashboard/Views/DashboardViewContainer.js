@@ -51,6 +51,8 @@ WK.DashboardViewContainer = function(element, testIndex) {
     var settingsContainer = this.settingsOutletElement = document.createElement("div");
     this.settingsOutletElement.className = "settings-outlet";
     element.appendChild(this.settingsOutletElement);
+
+    window.addEventListener("popstate", this._didPopState.bind(this));
 }
 
 WK.DashboardViewContainer.StyleClassName = "dashboard-view-container";
@@ -203,6 +205,8 @@ WK.DashboardViewContainer.prototype = {
 
         // Associate with the new dashboard view.
         dashboardView._parentContainer = this;
+
+        window.history.pushState({index: newIndex});
 
         this.showBackForwardEntryForIndex(newIndex);
 
@@ -457,6 +461,12 @@ WK.DashboardViewContainer.prototype = {
     _updateHistoryCount: function()
     {
         this._headerIntervalLabelElement.textContent = "(Last " + this._testIndex.maxTestRuns + " Runs)";
+    },
+
+    _didPopState: function(event)
+    {
+        console.log("did pop state", event.state);
+        this.goBack();
     },
 
     _addDashboardViewElement: function(dashboardView)

@@ -234,6 +234,30 @@ DOMTokenList.prototype.contains = function(string)
     return false;
 }
 
+Object.defineProperty(Array.prototype, "lastValue",
+{
+    get: function()
+    {
+        if (!this.length)
+            return undefined;
+        return this[this.length - 1];
+    }
+});
+
+Object.defineProperty(Array.prototype, "remove",
+{
+    value: function(value, onlyFirst)
+    {
+        for (var i = this.length - 1; i >= 0; --i) {
+            if (this[i] === value) {
+                this.splice(i, 1);
+                if (onlyFirst)
+                    return;
+            }
+        }
+    }
+});
+
 Array.prototype.contains = function(value)
 {
     return this.indexOf(value) >= 0;
