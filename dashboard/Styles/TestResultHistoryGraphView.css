@@ -85,6 +85,42 @@
     fill: rgb(200, 200, 200);
 }
 
+.test-results-graph circle.critical-bubbles {
+    fill-opacity: 0.75;
+}
+
+.test-results-graph circle.critical-bubbles.outcome-pass {
+    fill: rgb(90, 187, 49);
+    fill-opacity: 0.25;
+}
+
+.test-results-graph circle.critical-bubbles.outcome-fail-text,
+.test-results-graph circle.critical-bubbles.outcome-fail-image,
+.test-results-graph circle.critical-bubbles.outcome-fail-audio {
+    fill: rgb(178, 28, 0);
+}
+
+.test-results-graph circle.critical-bubbles.outcome-timeout {
+    fill: rgb(255, 137, 0);
+}
+
+.test-results-graph circle.critical-bubbles.outcome-crash {
+    fill: rgb(112, 9, 159);
+}
+
+.test-results-graph circle.critical-bubbles.outcome-skip,
+.test-results-graph circle.critical-bubbles.outcome-missing,
+.test-results-graph circle.critical-bubbles.outcome-nodata {
+    fill: rgb(200, 200, 200);
+}
+
+.test-results-graph text.selection-text {
+    font-family: "HelveticaNeue-Light", Helvetica, Arial;
+    font-size: 12px;
+    font-weight:bold;
+    fill: rgb(92, 92, 92);
+}
+
 .test-results-graph rect.selection-overlay {
     fill: rgb(255, 255, 255);
     fill-opacity: 0.2;
@@ -92,4 +128,7 @@
 
 .test-results-graph:hover rect.selection-overlay {
     fill-opacity: 0.3;
+    stroke-width: 1px;
+    stroke: #fff;
+    stroke-opacity: 0.8;
 }

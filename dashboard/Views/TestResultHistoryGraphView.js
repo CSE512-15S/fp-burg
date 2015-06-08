@@ -163,6 +163,16 @@ WK.TestResultHistoryGraphView.prototype = {
             .attr("x2", function(d) { return roundX(d.begin + d.repeat + missingResultCount); })
             .attr("y2", function(d) { return 1 + gutterHeight + roundY(maxDuration - d.duration); });
 
+        var circleRadius = 3;
+
+        svg.selectAll(".critical-bubbles")
+        .data(this._repeatData).enter()
+            .append("circle")
+            .attr("class", function(d) { return "critical-bubbles " + d.outcome; })
+            .attr("cx", function(d) { return roundX(d.begin) + circleRadius; })
+            .attr("cy", 1 + gutterHeight / 2)
+            .attr("r", circleRadius);
+
         var overlay = this._overlayElement = svg.append("rect")
             .attr("class", "selection-overlay")
             .attr("opacity", 0)
@@ -170,6 +180,14 @@ WK.TestResultHistoryGraphView.prototype = {
             .attr("y", 1 + gutterHeight + roundY(0))
             .attr("width", x(1))
             .attr("height", roundY(maxDuration));
+
+        var selectorText = this._selectorTextElement = svg.append("text")
+            .attr("class", "selection-text")
+            .attr("opacity", 0)
+            .attr("x", 0)
+            .attr("y", 1 + gutterHeight + roundY(maxDuration) + gutterHeight)
+            .attr("height", gutterHeight)
+            .attr("text-anchor", "middle");
 
         var widget = this;
 
@@ -191,15 +209,15 @@ WK.TestResultHistoryGraphView.prototype = {
     set selectedRunOrdinal(ordinal)
     {
         if (ordinal === null || ordinal < 0 || ordinal > this._results.runs.length - 1) {
-            this._mouseleaveGraph();
+            this._hideSelection();
             return;
         }
 
         // Find our repeat data for this run.
         var data = null;
-        for (var i = 0; i < this._repeatData.length; ++i) {
-            if (this._repeatData[i].begin + this._repeatData[i].repeat > ordinal) {
-                data = this._repeatData[i];
+        for (var i = 0; i < this._timingData.length; ++i) {
+            if (this._timingData[i].begin + this._timingData[i].repeat > ordinal) {
+                data = this._timingData[i];
                 break;
             }
         }
@@ -209,18 +227,52 @@ WK.TestResultHistoryGraphView.prototype = {
 
         this._mouseenterGraph();
         this._overlayElement.attr("x", this._roundX(ordinal));
+
+        switch (data.outcome) {
+        case WK.TestResult.Outcome.Pass:
+            textLabel = data.duration + "s";
+            break;
+        case WK.TestResult.Outcome.FailText:
+        case WK.TestResult.Outcome.FailImage:
+        case WK.TestResult.Outcome.FailAudio:
+            textLabel = "FAIL";
+            break;
+        case WK.TestResult.Outcome.Timeout:
+            textLabel = "TIMEOUT";
+            break;
+        case WK.TestResult.Outcome.Crash:
+            textLabel = "CRASH";
+            break;
+        case WK.TestResult.Outcome.Skip:
+        case WK.TestResult.Outcome.Missing:
+        case WK.TestResult.Outcome.NoData:
+        default:
+            textLabel = "UNKNOWN";
+            break;
+        }
+
+        this._selectorTextElement
+            .attr("x", this._roundX(ordinal + 0.5))
+            .text(textLabel);
     },
 
     // Private
 
-    _mouseleaveGraph: function()
+    _hideSelection: function()
     {
         this._overlayElement.attr("opacity", 0);
+        this._selectorTextElement.attr("opacity", 0);
+    },
+
+    _mouseleaveGraph: function()
+    {
+        this._hideSelection();
         this.dispatchEventToListeners(WK.TestResultHistoryGraphView.Event.RunSelectionChanged, {ordinal: null});
     },
 
     _mouseenterGraph: function()
     {
         this._overlayElement.attr("opacity", 1);
+        this._selectorTextElement.attr("opacity", 1);
     },
 };
