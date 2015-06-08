@@ -32,7 +32,11 @@ WK.TestHistoryView = function(test, testIndex) {
     this._descriptionElement = document.createElement("div");
     this._descriptionElement.textContent = "All Results for " + test.fullName;
 
-    this.element.textContent = "TEST";
+    this._tableElement = document.createElement("table");
+    this._tableElement.className = "test-history-grid";
+    this.element.appendChild(this._tableElement);
+
+    this.render();
 }
 
 WK.TestHistoryView.prototype = {
@@ -44,5 +48,38 @@ WK.TestHistoryView.prototype = {
     get descriptionElement()
     {
         return this._descriptionElement;
-    }
+    },
+
+    render: function()
+    {
+        this._tableElement.removeChildren();
+
+        var colgroup = document.createElement("colgroup");
+        colgroup.appendChild(document.createElement("col"));
+        colgroup.appendChild(document.createElement("col"));
+        this._tableElement.appendChild(colgroup);
+
+        var tbody = this.tbodyElement = document.createElement("tbody");
+        this._tableElement.appendChild(tbody);
+
+        var testResults = this._testIndex.findResultsForTest(this._test);
+        _.each(this._testIndex.builders, function(builder) {
+            var builderResult = testResults.get(builder);
+            var tr = document.createElement("tr");
+            tr.representedResult = builderResult;
+            var tdbuilder = document.createElement("td");
+            tdbuilder.textContent = builder.name;
+            tr.appendChild(tdbuilder);
+            var cell = document.createElement("td");
+            if (builderResult) {
+                var graph = new WK.TestResultHistoryGraphView(builderResult);
+                cell.appendChild(graph.element);
+            } else {
+                cell.textContent = "PASS / SKIP";
+            }
+
+            tr.appendChild(cell);
+            this.tbodyElement.appendChild(tr);
+        }, this);
+    },
 };

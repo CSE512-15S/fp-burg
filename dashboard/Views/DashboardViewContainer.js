@@ -465,7 +465,10 @@ WK.DashboardViewContainer.prototype = {
 
     _didPopState: function(event)
     {
-        var index = event.state ? event.state.index - 1 : 0;
+        if (!event.state)
+            return;
+
+        var index = event.state.index - 1;
         this.showBackForwardEntryForIndex(index);
     },
 

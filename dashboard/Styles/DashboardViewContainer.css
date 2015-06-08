@@ -78,4 +78,8 @@ body {
     width: 400px;
 }
 
+#content .dashboard-view {
+    position: absolute;
+    top: 80px;
+}
 

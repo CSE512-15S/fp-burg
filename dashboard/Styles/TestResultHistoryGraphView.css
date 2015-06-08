@@ -23,73 +23,64 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-.test-results-sparkline {
-    width: 126px;
+.test-results-graph {
+    width: 776px;
     margin: 0;
-    filter: saturate(150%);
-    -webkit-filter: saturate(150%);
-    cursor: pointer;
-    cursor: -webkit-zoom-in;
 }
 
-.test-results-sparkline:hover {
-    border-color: #ccc;
-}
-
-.test-results-sparkline line.repeat-lines {
+.test-results-graph line.repeat-lines {
     stroke-width: 2px;
     stroke: black;
 }
 
-.test-results-sparkline line.repeat-lines.outcome-pass {
+.test-results-graph line.repeat-lines.outcome-pass {
     stroke: rgb(47, 96, 25);
 }
 
-.test-results-sparkline line.repeat-lines.outcome-fail-text,
-.test-results-sparkline line.repeat-lines.outcome-fail-image,
-.test-results-sparkline line.repeat-lines.outcome-fail-audio {
+.test-results-graph line.repeat-lines.outcome-fail-text,
+.test-results-graph line.repeat-lines.outcome-fail-image,
+.test-results-graph line.repeat-lines.outcome-fail-audio {
     stroke: rgb(93, 15, 0);
 }
 
-.test-results-sparkline line.repeat-lines.outcome-timeout {
+.test-results-graph line.repeat-lines.outcome-timeout {
     stroke: rgb(155, 104, 0);
 }
 
-.test-results-sparkline line.repeat-lines.outcome-crash {
+.test-results-graph line.repeat-lines.outcome-crash {
     stroke: rgb(112, 9, 159);
 }
 
-.test-results-sparkline line.repeat-lines.outcome-skip,
-.test-results-sparkline line.repeat-lines.outcome-missing,
-.test-results-sparkline line.repeat-lines.outcome-nodata {
+.test-results-graph line.repeat-lines.outcome-skip,
+.test-results-graph line.repeat-lines.outcome-missing,
+.test-results-graph line.repeat-lines.outcome-nodata {
     stroke: rgb(200, 200, 200);
 }
 
-.test-results-sparkline rect.repeat-block {
+.test-results-graph rect.repeat-block {
     fill-opacity: 0.35;
-    height: 100%;
 }
 
-.test-results-sparkline rect.repeat-block.outcome-pass {
+.test-results-graph rect.repeat-block.outcome-pass {
     fill: rgb(90, 187, 49);
 }
 
-.test-results-sparkline rect.repeat-block.outcome-fail-text,
-.test-results-sparkline rect.repeat-block.outcome-fail-image,
-.test-results-sparkline rect.repeat-block.outcome-fail-audio {
+.test-results-graph rect.repeat-block.outcome-fail-text,
+.test-results-graph rect.repeat-block.outcome-fail-image,
+.test-results-graph rect.repeat-block.outcome-fail-audio {
     fill: rgb(178, 28, 0);
 }
 
-.test-results-sparkline rect.repeat-block.outcome-timeout {
+.test-results-graph rect.repeat-block.outcome-timeout {
     fill: rgb(255, 137, 0);
 }
 
-.test-results-sparkline rect.repeat-block.outcome-crash {
+.test-results-graph rect.repeat-block.outcome-crash {
     fill: rgb(112, 9, 159);
 }
 
-.test-results-sparkline rect.repeat-block.outcome-skip,
-.test-results-sparkline rect.repeat-block.outcome-missing,
-.test-results-sparkline rect.repeat-block.outcome-nodata {
+.test-results-graph rect.repeat-block.outcome-skip,
+.test-results-graph rect.repeat-block.outcome-missing,
+.test-results-graph rect.repeat-block.outcome-nodata {
     fill: rgb(200, 200, 200);
 }
