@@ -33,7 +33,9 @@ WK.TestResultHistoryGraphView = function(testResults) {
     this.element = document.createElement("div");
     this.element.className = "test-results-graph";
 
-    this.element.addEventListener("click", this._graphClicked.bind(this));
+    this.maxDuration = 30;
+
+    this.precomputeData();
 
     this._boundRenderFunction = this.render.bind(this);
     this.renderSoon();
@@ -42,7 +44,7 @@ WK.TestResultHistoryGraphView = function(testResults) {
 WK.Object.addConstructorFunctions(WK.TestResultHistoryGraphView);
 
 WK.TestResultHistoryGraphView.Event = {
-    Clicked: "graph-view-clicked"
+    RunSelectionChanged: "graph-view-run-selection-changed"
 }
 
 WK.TestResultHistoryGraphView.prototype = {
@@ -51,60 +53,11 @@ WK.TestResultHistoryGraphView.prototype = {
 
     // Public
 
-    renderSoon: function()
+    precomputeData: function()
     {
-        if (this._requestAnimationFrameToken)
-            return;
-
-        this._requestAnimationFrameToken = window.requestAnimationFrame(this._boundRenderFunction) || true;
-    },
-
-    render: function()
-    {
-        if (this._requestAnimationFrameToken)
-            this._requestAnimationFrameToken = undefined;
-
-        var runs = this._results.runs;
-
-        var availWidth = 780;
-        var padding = 2;
-        var width = availWidth - 2 * padding;
-        var totalWidth = width;
-
-        var gutterHeight = 22;
-        var totalHeight = 72;
-        var gutterHeight = 12;
-        var graphHeight = totalHeight - (2 * gutterHeight);
-        var maxDuration = 30;
-
-        // For rect fills, don't round because it can cause see-through gaps.
-        // It's more acceptable to have some blurred edges. For lines, always
-        // use the rounded version otherwise everything will be a smudgy mess.
-        var x = d3.scale.linear()
-            .domain([0, runs.length])
-            .range([0, width]);
-        var roundX = x.copy()
-            .rangeRound(x.range());
-
-        var y = d3.scale.linear()
-            .domain([0, maxDuration])
-            .rangeRound([1, graphHeight - 1]);
-        var roundY = y.copy()
-            .rangeRound(y.range());
-
-        var svg = d3.select(this.element).append("svg")
-            .attr("width", totalWidth)
-            .attr("height", totalHeight);
-
-        var overlay = svg.append("rect")
-            .attr("opacity", 0)
-            .attr("x", 0)
-            .attr("y", 0)
-            .attr("width", x(1))
-            .attr("height", 1 + gutterHeight + roundY(0));
-
+        var maxDuration = this.maxDuration;
         var resultCount = 0;
-        var timingData = [];
+        var timingData = this._timingData = [];
         this._results.forEachRepeatGroup(function(repeatedRuns, result) {
             timingData.push({
                 begin: resultCount,
@@ -116,8 +69,8 @@ WK.TestResultHistoryGraphView.prototype = {
             resultCount += repeatedRuns.length;
         })
 
-        var missingResultCount = runs.length - resultCount;
-        var base = missingResultCount, repeat = 0;
+        var missingResultCount = this._missingResultCount = this._results.runs.length - resultCount;
+        var base = this._missingResultCount, repeat = 0;
         var repeatData = [];
         var currentOutcome = timingData[0].outcome;
         var currentDuration = timingData[0].duration;
@@ -142,9 +95,56 @@ WK.TestResultHistoryGraphView.prototype = {
         }
         addRepeatedOutcome();
 
-        svg
-        .selectAll(".repeat-block")
-        .data(repeatData).enter()
+        this._repeatData = repeatData;
+    },
+
+    renderSoon: function()
+    {
+        if (this._requestAnimationFrameToken)
+            return;
+
+        this._requestAnimationFrameToken = window.requestAnimationFrame(this._boundRenderFunction) || true;
+    },
+
+    render: function()
+    {
+        if (this._requestAnimationFrameToken)
+            this._requestAnimationFrameToken = undefined;
+
+        var runs = this._results.runs;
+
+        var availWidth = 780;
+        var padding = 2;
+        var width = availWidth - 2 * padding;
+        var totalWidth = width;
+
+        var totalHeight = 72;
+        var gutterHeight = 16;
+        var graphHeight = totalHeight - (2 * gutterHeight);
+        var maxDuration = this.maxDuration;
+        var missingResultCount = this._missingResultCount;
+
+        // For rect fills, don't round because it can cause see-through gaps.
+        // It's more acceptable to have some blurred edges. For lines, always
+        // use the rounded version otherwise everything will be a smudgy mess.
+        var x = this._x = d3.scale.linear()
+            .domain([0, runs.length])
+            .range([0, width]);
+        var roundX = this._roundX = x.copy()
+            .rangeRound(x.range());
+
+        var y = this._y = d3.scale.linear()
+            .domain([0, maxDuration])
+            .rangeRound([1, graphHeight - 1]);
+        var roundY = y.copy()
+            .rangeRound(y.range());
+
+        var svg = this._svgElement = d3.select(this.element).append("svg")
+            .attr("width", totalWidth)
+            .attr("height", totalHeight);
+
+        svg.selectAll(".repeat-block")
+        .data(this._repeatData).enter()
             .append("rect")
             .attr("class", function(d) { return "repeat-block " + d.outcome; })
             .attr("x", function(d) { return x(d.begin); })
@@ -152,9 +152,10 @@ WK.TestResultHistoryGraphView.prototype = {
             .attr("y", 1 + gutterHeight + roundY(0))
             .attr("height", roundY(maxDuration));
 
-        svg
-        .selectAll(".repeat-lines")
-        .data(timingData).enter()
+            console.log(this._timingData);
+
+        svg.selectAll(".repeat-lines")
+        .data(this._timingData).enter()
             .append("line")
             .attr("class", function(d) { return "repeat-lines " + d.outcome; })
             .attr("x1", function(d) { return roundX(d.begin + missingResultCount); })
@@ -162,44 +163,64 @@ WK.TestResultHistoryGraphView.prototype = {
             .attr("x2", function(d) { return roundX(d.begin + d.repeat + missingResultCount); })
             .attr("y2", function(d) { return 1 + gutterHeight + roundY(maxDuration - d.duration); });
 
-        function mouseleave() {
-            overlay.attr("opacity", 0);
-        }
+        var overlay = this._overlayElement = svg.append("rect")
+            .attr("class", "selection-overlay")
+            .attr("opacity", 0)
+            .attr("x", 0)
+            .attr("y", 1 + gutterHeight + roundY(0))
+            .attr("width", x(1))
+            .attr("height", roundY(maxDuration));
 
-        function mouseenter() {
-            overlay.attr("opacity", 1);
-        }
+        var widget = this;
 
         svg
-        .on("mouseleave", mouseleave)
-        .on("mouseenter", mouseenter)
+        .on("mouseleave", this._mouseleaveGraph.bind(this))
+        .on("mouseenter", this._mouseenterGraph.bind(this))
         .on("mousemove", function() {
             var mouseX = d3.mouse(this)[0];
             if (mouseX < x.range()[0] || mouseX > x.range()[1]) {
-                mouseleave();
+                this._mouseleaveGraph();
                 return;
             }
-            var runOrdinal = Math.floor(x.invert(mouseX));
-            // Find our repeat data for this run.
-            var data = null;
-            for (var i = 0; i < repeatData.length; ++i) {
-                if (repeatData[i].begin + repeatData[i].repeat > runOrdinal) {
-                    data = repeatData[i];
-                    break;
-                }
-            }
 
-            overlay
-            .attr("x", roundX(runOrdinal))
-            .attr("height", 1 + gutterHeight + roundY(data.duration));
+            var runOrdinal = Math.floor(x.invert(mouseX));
+            widget.dispatchEventToListeners(WK.TestResultHistoryGraphView.Event.RunSelectionChanged, {ordinal: runOrdinal});
         });
+    },
+
+    set selectedRunOrdinal(ordinal)
+    {
+        if (ordinal === null || ordinal < 0 || ordinal > this._results.runs.length - 1) {
+            this._mouseleaveGraph();
+            return;
+        }
+
+        // Find our repeat data for this run.
+        var data = null;
+        for (var i = 0; i < this._repeatData.length; ++i) {
+            if (this._repeatData[i].begin + this._repeatData[i].repeat > ordinal) {
+                data = this._repeatData[i];
+                break;
+            }
+        }
+
+        if (!data)
+            return;
+
+        this._mouseenterGraph();
+        this._overlayElement.attr("x", this._roundX(ordinal));
     },
 
     // Private
 
-    _graphClicked: function(event)
+    _mouseleaveGraph: function()
     {
-        event.stopPropagation();
-        this.dispatchEventToListeners(WK.TestResultHistoryGraphView.Event.Clicked);
-    }
+        this._overlayElement.attr("opacity", 0);
+        this.dispatchEventToListeners(WK.TestResultHistoryGraphView.Event.RunSelectionChanged, {ordinal: null});
+    },
+
+    _mouseenterGraph: function()
+    {
+        this._overlayElement.attr("opacity", 1);
+    },
 };

@@ -36,6 +36,10 @@ WK.TestHistoryView = function(test, testIndex) {
     this._tableElement.className = "test-history-grid";
     this.element.appendChild(this._tableElement);
 
+    this._graphs = [];
+
+    WK.TestResultHistoryGraphView.addEventListener(WK.TestResultHistoryGraphView.Event.RunSelectionChanged, this._runSelectionChanged, this);
+
     this.render();
 }
 
@@ -53,6 +57,7 @@ WK.TestHistoryView.prototype = {
     render: function()
     {
         this._tableElement.removeChildren();
+        this._graphs = [];
 
         var colgroup = document.createElement("colgroup");
         colgroup.appendChild(document.createElement("col"));
@@ -73,6 +78,7 @@ WK.TestHistoryView.prototype = {
             var cell = document.createElement("td");
             if (builderResult) {
                 var graph = new WK.TestResultHistoryGraphView(builderResult);
+                this._graphs.push(graph);
                 cell.appendChild(graph.element);
             } else {
                 cell.textContent = "PASS / SKIP";
@@ -82,4 +88,16 @@ WK.TestHistoryView.prototype = {
             this.tbodyElement.appendChild(tr);
         }, this);
     },
+
+    // Private
+
+    _runSelectionChanged: function(event) {
+        if (this._graphs.indexOf(event.target) === -1)
+            return;
+
+        var payload = event.data;
+        var ordinal = payload.ordinal;
+        for (var i = 0; i < this._graphs.length; ++i)
+            this._graphs[i].selectedRunOrdinal = ordinal;
+    }
 };
