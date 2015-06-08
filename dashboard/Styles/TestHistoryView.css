@@ -51,7 +51,7 @@ table.test-history-grid td:first-of-type {
 
 table.test-history-grid td:not(:first-of-type) {
     text-align: center;
-    color: #aaa;
+    color: rgb(92, 92, 92);
     font-size: 16px;
     border-left: 20px solid transparent;
 }
@@ -69,21 +69,12 @@ table.test-history-grid tbody tr:nth-of-type(2n + 1) {
 }
 
 
-table.test-history-grid tbody tr:hover {
+table.test-history-grid tbody tr:nth-of-type(2n) {
     background-color: rgb(223, 218, 209);
 }
 
-table.test-history-grid tbody tr:hover td:first-of-type {
+table.test-history-grid tbody tr td:first-of-type:hover {
     text-decoration: underline;
     cursor: pointer;
     color: rgb(45, 45, 45);
 }
-
-table.test-history-grid tbody tr:hover td:not(:first-of-type) {
-    color: rgb(92, 92, 92);
-}
-
-
-width: 800px;
-margin-left: 200px;
-
