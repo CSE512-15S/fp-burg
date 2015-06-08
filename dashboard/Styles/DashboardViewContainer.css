@@ -25,15 +25,15 @@
  */
 
 body {
-    margin-top: 15px;
-    font-family: "Helvetica Neue", Helvetica, sans-serif;
     background-color: #E9E7DF;
-    color: #5C5C5C;
 }
 
 #content {
+    font-family: "Helvetica Neue", Helvetica, sans-serif;
+    color: #5C5C5C;
+
     position: relative;
-    margin: auto 20px auto 10px;
+    margin: auto 35px auto 10px;
 }
 
 #content > hr {
@@ -69,3 +69,13 @@ body {
     margin-left: -50px;
     text-align: center;
 }
+
+#content .settings-container {
+    /* Keep in sync with table edge */
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    width: 400px;
+}
+
+

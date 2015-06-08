@@ -56,14 +56,6 @@
     background-color: rgba(200, 200, 200, 0.35);
 }
 
-#content .settings-container {
-    /* Keep in sync with table edge */
-    position: absolute;
-    top: 10px;
-    left: 20px;
-    width: 400px;
-}
-
 #content .settings-container > div.row .scope-bar {
     display: inline;
     left: 50px;
@@ -81,7 +73,7 @@
     text-align: right;
 }
 
-#content .test-history-grid {
+#content .dashboard-view {
     position: absolute;
     top: 70px;
 }

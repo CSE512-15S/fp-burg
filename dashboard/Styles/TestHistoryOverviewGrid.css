@@ -27,9 +27,6 @@ table.test-history-overview-grid {
     table-layout: fixed;
     width: 100%;
     border-collapse: collapse;
-
-    top: 70px;
-    position: absolute;
 }
 
 table.test-history-overview-grid col:first-of-type,
