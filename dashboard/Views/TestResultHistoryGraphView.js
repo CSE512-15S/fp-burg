@@ -96,6 +96,13 @@ WK.TestResultHistoryGraphView.prototype = {
             .attr("width", totalWidth)
             .attr("height", totalHeight);
 
+        var overlay = svg.append("rect")
+            .attr("opacity", 0)
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", x(1))
+            .attr("height", 1 + gutterHeight + roundY(0));
+
         var resultCount = 0;
         var timingData = [];
         this._results.forEachRepeatGroup(function(repeatedRuns, result) {
@@ -113,11 +120,13 @@ WK.TestResultHistoryGraphView.prototype = {
         var base = missingResultCount, repeat = 0;
         var repeatData = [];
         var currentOutcome = timingData[0].outcome;
+        var currentDuration = timingData[0].duration;
         function addRepeatedOutcome() {
             repeatData.push({
                 begin: base,
                 repeat: repeat,
-                outcome: currentOutcome
+                outcome: currentOutcome,
+                duration: currentDuration
             });
         }
 
@@ -125,6 +134,7 @@ WK.TestResultHistoryGraphView.prototype = {
             if (timingData[i].outcome !== currentOutcome) {
                 addRepeatedOutcome();
                 currentOutcome = timingData[i].outcome;
+                currentDuration = timingData[i].duration;
                 base += repeat;
                 repeat = 0;
             }
@@ -132,7 +142,8 @@ WK.TestResultHistoryGraphView.prototype = {
         }
         addRepeatedOutcome();
 
-        svg.selectAll(".repeat-block")
+        svg
+        .selectAll(".repeat-block")
         .data(repeatData).enter()
             .append("rect")
             .attr("class", function(d) { return "repeat-block " + d.outcome; })
@@ -141,7 +152,8 @@ WK.TestResultHistoryGraphView.prototype = {
             .attr("y", 1 + gutterHeight + roundY(0))
             .attr("height", roundY(maxDuration));
 
-        svg.selectAll(".repeat-lines")
+        svg
+        .selectAll(".repeat-lines")
         .data(timingData).enter()
             .append("line")
             .attr("class", function(d) { return "repeat-lines " + d.outcome; })
@@ -149,6 +161,38 @@ WK.TestResultHistoryGraphView.prototype = {
             .attr("y1", function(d) { return 1 + gutterHeight + roundY(maxDuration - d.duration); })
             .attr("x2", function(d) { return roundX(d.begin + d.repeat + missingResultCount); })
             .attr("y2", function(d) { return 1 + gutterHeight + roundY(maxDuration - d.duration); });
+
+        function mouseleave() {
+            overlay.attr("opacity", 0);
+        }
+
+        function mouseenter() {
+            overlay.attr("opacity", 1);
+        }
+
+        svg
+        .on("mouseleave", mouseleave)
+        .on("mouseenter", mouseenter)
+        .on("mousemove", function() {
+            var mouseX = d3.mouse(this)[0];
+            if (mouseX < x.range()[0] || mouseX > x.range()[1]) {
+                mouseleave();
+                return;
+            }
+            var runOrdinal = Math.floor(x.invert(mouseX));
+            // Find our repeat data for this run.
+            var data = null;
+            for (var i = 0; i < repeatData.length; ++i) {
+                if (repeatData[i].begin + repeatData[i].repeat > runOrdinal) {
+                    data = repeatData[i];
+                    break;
+                }
+            }
+
+            overlay
+            .attr("x", roundX(runOrdinal))
+            .attr("height", 1 + gutterHeight + roundY(data.duration));
+        });
     },
 
     // Private
