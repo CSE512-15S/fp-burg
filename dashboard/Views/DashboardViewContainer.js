@@ -188,6 +188,8 @@ WK.DashboardViewContainer.prototype = {
 
         // Insert the dashboard view at the new index. This will remove any dashboard views greater than or equal to the index.
         var removedEntries = this._backForwardList.splice(newIndex, this._backForwardList.length - newIndex, provisionalEntry);
+        if (newIndex > 0)
+            window.history.pushState({index: newIndex});
 
         console.assert(newIndex === this._backForwardList.length - 1);
         console.assert(this._backForwardList[newIndex] === provisionalEntry);
@@ -205,8 +207,6 @@ WK.DashboardViewContainer.prototype = {
 
         // Associate with the new dashboard view.
         dashboardView._parentContainer = this;
-
-        window.history.pushState({index: newIndex});
 
         this.showBackForwardEntryForIndex(newIndex);
 
@@ -465,8 +465,8 @@ WK.DashboardViewContainer.prototype = {
 
     _didPopState: function(event)
     {
-        console.log("did pop state", event.state);
-        this.goBack();
+        var index = event.state ? event.state.index - 1 : 0;
+        this.showBackForwardEntryForIndex(index);
     },
 
     _addDashboardViewElement: function(dashboardView)
