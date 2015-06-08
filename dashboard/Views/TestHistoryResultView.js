@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2013 Apple Inc. All rights reserved.
  * Copyright (C) 2015 University of Washington.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,48 +23,25 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-body {
-    margin-top: 15px;
-    font-family: "Helvetica Neue", Helvetica, sans-serif;
-    background-color: #E9E7DF;
-    color: #5C5C5C;
+WK.TestHistoryResultView = function(testResult) {
+    WK.DashboardView.call(this, testResult);
+
+    this._testResult = testResult;
+
+    this._descriptionElement = document.createElement("div");
+    this._descriptionElement.textContent = "Single Result for ???";
+
+    this.element.textContent = "TEST";
 }
 
-#content {
-    position: relative;
-    margin: auto 20px auto 10px;
-}
+WK.TestHistoryResultView.prototype = {
+    __proto__: WK.DashboardView.prototype,
+    constructor: WK.TestHistoryResultView,
 
-#content > hr {
-    height: 2px;
-    border: none;
-    background-color: #9C9C9C;
-    margin: 20px 0px 40px;
-}
+    // Overrides
 
-#content .header-container {
-    position: absolute;
-    /* Keep in sync with table: width(first column) + 0.5 * width(other column) */
-    left: 465px;
-    min-width: 400px;
-}
-
-#content .header-container h1 {
-    margin: 5px 0;
-    font-size: 24px;
-    font-weight: normal;
-    text-align: left;
-}
-
-#content .header-container h1 span {
-    margin-left: 10px;
-    font-size: 16px;
-    line-height: 24px;
-}
-
-#content .header-container .description-outlet {
-    font-size: 14px;
-    max-width: 500px;
-    margin-left: -50px;
-    text-align: center;
-}
+    get descriptionElement()
+    {
+        return this._descriptionElement;
+    }
+};

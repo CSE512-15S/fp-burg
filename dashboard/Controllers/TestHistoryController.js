@@ -34,8 +34,8 @@ WK.TestHistoryController = function() {
 
     this._testIndex = new WK.TestResultIndex();
 
-    // TODO: BackForwardList
-    // TODO: DashboardHeader
+    var contentElement = document.getElementById("content");
+    this._viewContainer = new WK.DashboardViewContainer(contentElement, this._testIndex);
 }
 
 WK.TestHistoryController.prototype = {
@@ -43,10 +43,28 @@ WK.TestHistoryController.prototype = {
     constructor: WK.TestHistoryController,
 
     // Public
+
     get testIndex()
     {
         return this._testIndex;
     },
+
+    showOverview: function()
+    {
+        this._viewContainer.showDashboardViewForRepresentedObject(this._testIndex);
+    },
+
+    showDetailsForTest: function(test)
+    {
+        this._viewContainer.showDashboardViewForRepresentedObject(test, this._testIndex);
+    },
+
+    showDetailsForTestResult: function(testResult)
+    {
+        this._viewContainer.showDashboardViewForRepresentedObject(testResult);
+    },
+
+    // Private
 
     _buildersListLoaded: function(builders)
     {
@@ -63,9 +81,7 @@ WK.TestHistoryController.prototype = {
 
     _allResultsLoaded: function()
     {
-        // Create default view, which is a grid of all test results for all builders.
-        this._historyOverview = new WK.TestHistoryOverview(this._testIndex);
-        // TODO: attach it to the content element, create history entry.
+        this.showOverview();
     },
 
     _updateTestIndicesFromHistory: function(history)

@@ -24,35 +24,12 @@
  */
 
 WK.TestHistoryOverview = function(testIndex) {
-    WK.Object.call(this);
+    WK.DashboardView.call(this, testIndex);
 
     this._testIndex = testIndex;
 
-    // TODO: move the header stuff to the main view.
-
-    this.element = document.getElementById("content");
-    var headerContainer = document.createElement("div");
-    headerContainer.className = "header-container";
-    this.element.appendChild(headerContainer);
-
-    var headerElement = document.createElement("h1");
-    headerElement.textContent = "Test Results History";
-    headerContainer.appendChild(headerElement);
-
-    this._headerIntervalLabelElement = document.createElement("span");
-    this._headerIntervalLabelElement.textContent = "(loading)";
-    headerElement.appendChild(this._headerIntervalLabelElement);
-
-    // ---
-
-    this.viewLabelElement = document.createElement("div");
-    this.viewLabelElement.className = "dashboard-view-label";
-    this.viewLabelElement.textContent = "Showing: ";
-    headerContainer.appendChild(this.viewLabelElement);
-
-    var settingsContainer = this.settingsContainerElement = document.createElement("div");
-    this.settingsContainerElement.className = "settings-container";
-    this.element.appendChild(this.settingsContainerElement);
+    this._descriptionElement = document.createElement("div");
+    this._descriptionElement.textContent = "Showing: ";
 
     var resultTypes = [
         new WK.ScopeBarItem("any-result", "Any", true),
@@ -89,6 +66,10 @@ WK.TestHistoryOverview = function(testIndex) {
         return row;
     }
 
+    var settingsContainer = this._settingsElement = document.createElement("div");
+    this._settingsElement.className = "settings-container";
+    this.element.appendChild(this._settingsElement);
+
     _.chain(this._filterConfigs)
      .map(createRowForFilter)
      .each(function(row) { settingsContainer.appendChild(row); });
@@ -109,7 +90,7 @@ WK.TestHistoryOverview = function(testIndex) {
 }
 
 WK.TestHistoryOverview.prototype = {
-    __proto__: WK.Object.prototype,
+    __proto__: WK.DashboardView.prototype,
     constructor: WK.TestHistoryOverview,
 
     // Public
@@ -142,7 +123,18 @@ WK.TestHistoryOverview.prototype = {
         testsToDisplay = _.sortBy(testsToDisplay, "fullName");
 
         this._gridView.tests = testsToDisplay;
-        this._headerIntervalLabelElement.textContent = "(Last " + this._testIndex.maxTestRuns + " Runs)";
+    },
+
+    // Overrides
+
+    get settingsElement()
+    {
+        return this._settingsElement;
+    },
+
+    get descriptionElement()
+    {
+        return this._descriptionElement;
     },
 
     // Protected delegates
@@ -202,8 +194,8 @@ WK.TestHistoryOverview.prototype = {
                 return;
             }
         }
-        this.viewLabelElement.removeChildren();
-        this.viewLabelElement.appendChild(this._descriptionForActiveFilters());
+        this._descriptionElement.removeChildren();
+        this._descriptionElement.appendChild(this._descriptionForActiveFilters());
 
         this.refresh();
     },

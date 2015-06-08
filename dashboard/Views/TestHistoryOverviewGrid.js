@@ -172,12 +172,15 @@ WK.TestHistoryOverviewGrid.prototype = {
             return;
 
         console.log("Test result selected", sparkline.representedObject);
+        dashboardApp.showDetailsForTestResult(sparkline.representedObject);
     },
 
     _clickedWithinTableElement: function(event)
     {
         var enclosingRow = event.target.enclosingNodeOrSelfWithTagName("tr");
-        if (enclosingRow && enclosingRow.firstChild === event.target)
+        if (enclosingRow && enclosingRow.firstChild === event.target) {
             console.log("Test selected", enclosingRow.representedTest);
+            dashboardApp.showDetailsForTest(enclosingRow.representedTest);
+        }
     }
 };
