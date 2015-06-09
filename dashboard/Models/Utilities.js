@@ -234,6 +234,18 @@ DOMTokenList.prototype.contains = function(string)
     return false;
 }
 
+Object.defineProperty(Number, "constrain",
+{
+    value: function(num, min, max)
+    {
+        if (num < min)
+            num = min;
+        else if (num > max)
+            num = max;
+        return num;
+    }
+});
+
 Object.defineProperty(Array.prototype, "lastValue",
 {
     get: function()
