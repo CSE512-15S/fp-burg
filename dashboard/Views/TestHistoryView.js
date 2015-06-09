@@ -96,8 +96,8 @@ WK.TestHistoryView.prototype = {
             return;
 
         var payload = event.data;
-        var ordinal = payload.ordinal;
+        var ordinals = payload.ordinals;
         for (var i = 0; i < this._graphs.length; ++i)
-            this._graphs[i].selectedRunOrdinal = ordinal;
+            this._graphs[i].selectedRuns = ordinals;
     }
 };

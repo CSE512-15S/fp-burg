@@ -35,9 +35,9 @@ WK.TestResultHistoryGraphView = function(testResults) {
 
     this.maxDuration = 30;
 
-    this.precomputeData();
-
     this._boundRenderFunction = this.render.bind(this);
+
+    this.precomputeData();
     this.renderSoon();
 };
 
@@ -53,11 +53,28 @@ WK.TestResultHistoryGraphView.prototype = {
 
     // Public
 
+    get selectedRuns()
+    {
+        return this._selectedRuns;
+    },
+
+    set selectedRuns(value)
+    {
+        if (Object.shallowEqual(this._selectedRuns, value))
+            return;
+
+        if (!(value instanceof Array))
+            value = [value];
+
+        this._selectedRuns = value;
+        this.renderSoon();
+    },
+
     precomputeData: function()
     {
         var maxDuration = this.maxDuration;
         var resultCount = 0;
-        var timingData = this._timingData = [];
+        var timingData = [];
         this._results.forEachRepeatGroup(function(repeatedRuns, result) {
             timingData.push({
                 begin: resultCount,
@@ -69,8 +86,8 @@ WK.TestResultHistoryGraphView.prototype = {
             resultCount += repeatedRuns.length;
         })
 
-        var missingResultCount = this._missingResultCount = this._results.runs.length - resultCount;
-        var base = this._missingResultCount, repeat = 0;
+        var missingResultCount = this._results.runs.length - resultCount;
+        var base = missingResultCount, repeat = 0;
         var repeatData = [];
         var currentOutcome = timingData[0].outcome;
         var currentDuration = timingData[0].duration;
@@ -95,7 +112,11 @@ WK.TestResultHistoryGraphView.prototype = {
         }
         addRepeatedOutcome();
 
-        this._repeatData = repeatData;
+        this._aggregates = {
+            repeatData: repeatData,
+            timingData: timingData,
+            missingResultCount: missingResultCount,
+        };
     },
 
     renderSoon: function()
@@ -122,29 +143,33 @@ WK.TestResultHistoryGraphView.prototype = {
         var gutterHeight = 16;
         var graphHeight = totalHeight - (2 * gutterHeight);
         var maxDuration = this.maxDuration;
-        var missingResultCount = this._missingResultCount;
+        var missingResultCount = this._aggregates.missingResultCount;
 
         // For rect fills, don't round because it can cause see-through gaps.
         // It's more acceptable to have some blurred edges. For lines, always
         // use the rounded version otherwise everything will be a smudgy mess.
-        var x = this._x = d3.scale.linear()
+        var x = d3.scale.linear()
             .domain([0, runs.length])
             .range([0, width]);
-        var roundX = this._roundX = x.copy()
+        var roundX = x.copy()
             .rangeRound(x.range());
 
-        var y = this._y = d3.scale.linear()
+        var y =  d3.scale.linear()
             .domain([0, maxDuration])
             .rangeRound([1, graphHeight - 1]);
         var roundY = y.copy()
             .rangeRound(y.range());
 
-        var svg = this._svgElement = d3.select(this.element).append("svg")
-            .attr("width", totalWidth)
-            .attr("height", totalHeight);
+        if (!this.svg) {
+            this.svg = d3.select(this.element).append("svg")
+                .attr("width", totalWidth)
+                .attr("height", totalHeight);
+        }
+
+        var svg = this.svg;
 
         svg.selectAll(".repeat-block")
-        .data(this._repeatData).enter()
+        .data(this._aggregates.repeatData).enter()
             .append("rect")
             .attr("class", function(d) { return "repeat-block " + d.outcome; })
             .attr("x", function(d) { return x(d.begin); })
@@ -155,7 +180,7 @@ WK.TestResultHistoryGraphView.prototype = {
             console.log(this._timingData);
 
         svg.selectAll(".repeat-lines")
-        .data(this._timingData).enter()
+        .data(this._aggregates.timingData).enter()
             .append("line")
             .attr("class", function(d) { return "repeat-lines " + d.outcome; })
             .attr("x1", function(d) { return roundX(d.begin + missingResultCount); })
@@ -166,113 +191,89 @@ WK.TestResultHistoryGraphView.prototype = {
         var circleRadius = 3;
 
         svg.selectAll(".critical-bubbles")
-        .data(this._repeatData).enter()
+        .data(this._aggregates.repeatData).enter()
             .append("circle")
             .attr("class", function(d) { return "critical-bubbles " + d.outcome; })
             .attr("cx", function(d) { return roundX(d.begin) + circleRadius; })
             .attr("cy", 1 + gutterHeight / 2)
             .attr("r", circleRadius);
 
-        var overlay = this._overlayElement = svg.append("rect")
-            .attr("class", "selection-overlay")
-            .attr("opacity", 0)
-            .attr("x", 0)
-            .attr("y", 1 + gutterHeight + roundY(0))
-            .attr("width", x(1))
-            .attr("height", roundY(maxDuration));
-
-        var selectorText = this._selectorTextElement = svg.append("text")
-            .attr("class", "selection-text")
-            .attr("opacity", 0)
-            .attr("x", 0)
-            .attr("y", 1 + gutterHeight + roundY(maxDuration) + gutterHeight)
-            .attr("height", gutterHeight)
-            .attr("text-anchor", "middle");
 
         var widget = this;
 
+         function textLabelForRun(run) {
+            switch (run.data.outcome) {
+            case WK.TestResult.Outcome.Pass:
+                return run.data.duration + "s";
+            case WK.TestResult.Outcome.FailText:
+            case WK.TestResult.Outcome.FailImage:
+            case WK.TestResult.Outcome.FailAudio:
+                return "FAIL";
+            case WK.TestResult.Outcome.Timeout:
+                return "TIMEOUT";
+            case WK.TestResult.Outcome.Crash:
+                return "CRASH";
+            case WK.TestResult.Outcome.Skip:
+            case WK.TestResult.Outcome.Missing:
+            case WK.TestResult.Outcome.NoData:
+            default:
+                return "UNKNOWN";
+            }
+        }
+
+        // Find our repeat data for this run.
+        var timingData = this._aggregates.timingData;
+        var selectedRunsData = _.map(this.selectedRuns, function(runOrdinal) {
+            for (var i = 0; i < timingData.length; ++i) {
+                if (timingData[i].begin + timingData[i].repeat > runOrdinal) {
+                    return {ordinal: runOrdinal, data: timingData[i]};
+                }
+            }
+            return null;
+        }, this);
+
+        function keyForRunData(run) { return run.ordinal; }
+
+        var overlay = svg.selectAll(".selection-overlay").data(selectedRunsData, keyForRunData);
+        overlay.enter()
+            .append("rect")
+            .attr("class", function(d) { return "selection-overlay " + d.data.outcome; })
+            .attr("opacity", 1)
+            .attr("x", function(d) { return roundX(d.ordinal); })
+            .attr("y", 1 + gutterHeight + roundY(0))
+            .attr("width", x(1))
+            .attr("height", roundY(maxDuration))
+        overlay.exit()
+            .remove();
+
+        var label = svg.selectAll(".selection-text").data(selectedRunsData, keyForRunData);
+        label.enter()
+            .append("text")
+            .attr("class", function(d) { return "selection-text " + d.data.outcome; })
+            .attr("opacity", 1)
+            .attr("x", function(d) { return roundX(d.ordinal + 0.5); })
+            .attr("y", 1 + gutterHeight + roundY(maxDuration) + gutterHeight)
+            .attr("height", gutterHeight)
+            .attr("text-anchor", "middle")
+            .text(textLabelForRun)
+        label.exit()
+            .remove();
+
+        function mouseleave() {
+            this.dispatchEventToListeners(WK.TestResultHistoryGraphView.Event.RunSelectionChanged, {ordinals: []});
+        }
+
         svg
-        .on("mouseleave", this._mouseleaveGraph.bind(this))
-        .on("mouseenter", this._mouseenterGraph.bind(this))
+        .on("mouseleave", mouseleave.bind(this))
         .on("mousemove", function() {
             var mouseX = d3.mouse(this)[0];
             if (mouseX < x.range()[0] || mouseX > x.range()[1]) {
-                this._mouseleaveGraph();
+                mouseleave.call(this);
                 return;
             }
 
             var runOrdinal = Math.floor(x.invert(mouseX));
-            widget.dispatchEventToListeners(WK.TestResultHistoryGraphView.Event.RunSelectionChanged, {ordinal: runOrdinal});
+            widget.dispatchEventToListeners(WK.TestResultHistoryGraphView.Event.RunSelectionChanged, {ordinals: [runOrdinal]});
         });
-    },
-
-    set selectedRunOrdinal(ordinal)
-    {
-        if (ordinal === null || ordinal < 0 || ordinal > this._results.runs.length - 1) {
-            this._hideSelection();
-            return;
-        }
-
-        // Find our repeat data for this run.
-        var data = null;
-        for (var i = 0; i < this._timingData.length; ++i) {
-            if (this._timingData[i].begin + this._timingData[i].repeat > ordinal) {
-                data = this._timingData[i];
-                break;
-            }
-        }
-
-        if (!data)
-            return;
-
-        this._mouseenterGraph();
-        this._overlayElement.attr("x", this._roundX(ordinal));
-
-        switch (data.outcome) {
-        case WK.TestResult.Outcome.Pass:
-            textLabel = data.duration + "s";
-            break;
-        case WK.TestResult.Outcome.FailText:
-        case WK.TestResult.Outcome.FailImage:
-        case WK.TestResult.Outcome.FailAudio:
-            textLabel = "FAIL";
-            break;
-        case WK.TestResult.Outcome.Timeout:
-            textLabel = "TIMEOUT";
-            break;
-        case WK.TestResult.Outcome.Crash:
-            textLabel = "CRASH";
-            break;
-        case WK.TestResult.Outcome.Skip:
-        case WK.TestResult.Outcome.Missing:
-        case WK.TestResult.Outcome.NoData:
-        default:
-            textLabel = "UNKNOWN";
-            break;
-        }
-
-        this._selectorTextElement
-            .attr("x", this._roundX(ordinal + 0.5))
-            .text(textLabel);
-    },
-
-    // Private
-
-    _hideSelection: function()
-    {
-        this._overlayElement.attr("opacity", 0);
-        this._selectorTextElement.attr("opacity", 0);
-    },
-
-    _mouseleaveGraph: function()
-    {
-        this._hideSelection();
-        this.dispatchEventToListeners(WK.TestResultHistoryGraphView.Event.RunSelectionChanged, {ordinal: null});
-    },
-
-    _mouseenterGraph: function()
-    {
-        this._overlayElement.attr("opacity", 1);
-        this._selectorTextElement.attr("opacity", 1);
     },
 };
