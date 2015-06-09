@@ -66,6 +66,8 @@ WK.TestResultHistoryGraphView.prototype = {
         if (!(value instanceof Array))
             value = [value];
 
+        value = value.filter(function(d) { return d >= this._aggregates.missingResultCount; }.bind(this));
+
         this._selectedRuns = value;
         this.renderSoon();
     },
@@ -224,7 +226,7 @@ WK.TestResultHistoryGraphView.prototype = {
         var selectedRunsData = _.chain(this.selectedRuns)
         .map(function(runOrdinal) {
             for (var i = 0; i < timingData.length; ++i) {
-                if (timingData[i].begin + timingData[i].repeat > runOrdinal) {
+                if (missingResultCount + timingData[i].begin + timingData[i].repeat > runOrdinal) {
                     return {ordinal: runOrdinal, data: timingData[i]};
                 }
             }
@@ -247,12 +249,16 @@ WK.TestResultHistoryGraphView.prototype = {
         overlay.exit()
             .remove();
 
+        var minTextWidth = 60;
+
         var label = svg.selectAll(".selection-text").data(selectedRunsData, keyForRunData);
         label.enter()
             .append("text")
             .attr("class", function(d) { return "selection-text " + d.data.outcome; })
             .attr("opacity", 1)
-            .attr("x", function(d) { return roundX(d.ordinal + 0.5); })
+            .attr("x", function(d) {
+                return Number.constrain(roundX(d.ordinal + 0.5), minTextWidth * 0.5, width - (minTextWidth * 0.5));
+            })
             .attr("y", 1 + gutterHeight + roundY(maxDuration) + gutterHeight)
             .attr("height", gutterHeight)
             .attr("text-anchor", "middle")
@@ -290,6 +296,12 @@ WK.TestResultHistoryGraphView.prototype = {
             }
 
             var runOrdinal = Math.floor(x.invert(mouseX));
+
+            // Don't possibly select other graph's runs if this graph has no data for this run.
+            if (runOrdinal < missingResultCount) {
+                mouseleave();
+                return;
+            }
             widget.dispatchEventToListeners(WK.TestResultHistoryGraphView.Event.RunSelectionChanged, {ordinals: [runOrdinal]});
         });
     },
