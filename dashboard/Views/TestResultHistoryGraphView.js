@@ -177,8 +177,6 @@ WK.TestResultHistoryGraphView.prototype = {
             .attr("y", 1 + gutterHeight + roundY(0))
             .attr("height", roundY(maxDuration));
 
-            console.log(this._timingData);
-
         svg.selectAll(".repeat-lines")
         .data(this._aggregates.timingData).enter()
             .append("line")
@@ -190,11 +188,11 @@ WK.TestResultHistoryGraphView.prototype = {
 
         var circleRadius = 3;
 
-        svg.selectAll(".critical-bubbles")
+        svg.selectAll(".gutter-bubble")
         .data(this._aggregates.repeatData).enter()
             .append("circle")
-            .attr("class", function(d) { return "critical-bubbles " + d.outcome; })
-            .attr("cx", function(d) { return roundX(d.begin) + circleRadius; })
+            .attr("class", function(d) { return "gutter-bubble " + d.outcome; })
+            .attr("cx", function(d) { return roundX(d.begin + 0.5); })
             .attr("cy", 1 + gutterHeight / 2)
             .attr("r", circleRadius);
 
@@ -223,14 +221,17 @@ WK.TestResultHistoryGraphView.prototype = {
 
         // Find our repeat data for this run.
         var timingData = this._aggregates.timingData;
-        var selectedRunsData = _.map(this.selectedRuns, function(runOrdinal) {
+        var selectedRunsData = _.chain(this.selectedRuns)
+        .map(function(runOrdinal) {
             for (var i = 0; i < timingData.length; ++i) {
                 if (timingData[i].begin + timingData[i].repeat > runOrdinal) {
                     return {ordinal: runOrdinal, data: timingData[i]};
                 }
             }
             return null;
-        }, this);
+        })
+        .filter(function (d) { return d !== null; })
+        .value();
 
         function keyForRunData(run) { return run.ordinal; }
 
@@ -259,16 +260,32 @@ WK.TestResultHistoryGraphView.prototype = {
         label.exit()
             .remove();
 
+        var selectedCriticalRunsData = selectedRunsData.filter(function(run) {
+            return run.ordinal === run.data.begin;
+        });
+
+        var selectionCircleRadius = 4;
+
+        var bubble = svg.selectAll(".selection-bubble").data(selectedCriticalRunsData, keyForRunData);
+        bubble.enter()
+            .append("circle")
+            .attr("class", function(d) { return "gutter-bubble selection-bubble " + d.data.outcome; })
+            .attr("cx", function(d) { return roundX(d.data.begin + 0.5); })
+            .attr("cy", 1 + gutterHeight / 2)
+            .attr("r", selectionCircleRadius);
+        bubble.exit()
+            .remove();
+
         function mouseleave() {
-            this.dispatchEventToListeners(WK.TestResultHistoryGraphView.Event.RunSelectionChanged, {ordinals: []});
+            widget.dispatchEventToListeners(WK.TestResultHistoryGraphView.Event.RunSelectionChanged, {ordinals: []});
         }
 
         svg
-        .on("mouseleave", mouseleave.bind(this))
+        .on("mouseleave", mouseleave)
         .on("mousemove", function() {
             var mouseX = d3.mouse(this)[0];
             if (mouseX < x.range()[0] || mouseX > x.range()[1]) {
-                mouseleave.call(this);
+                mouseleave();
                 return;
             }
 

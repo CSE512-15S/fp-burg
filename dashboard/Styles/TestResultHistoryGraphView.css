@@ -85,32 +85,33 @@
     fill: rgb(200, 200, 200);
 }
 
-.test-results-graph circle.critical-bubbles {
+.test-results-graph circle.gutter-bubble {
     fill-opacity: 0.75;
+    cursor: pointer;
 }
 
-.test-results-graph circle.critical-bubbles.outcome-pass {
+.test-results-graph circle.gutter-bubble.outcome-pass {
     fill: rgb(90, 187, 49);
     fill-opacity: 0.25;
 }
 
-.test-results-graph circle.critical-bubbles.outcome-fail-text,
-.test-results-graph circle.critical-bubbles.outcome-fail-image,
-.test-results-graph circle.critical-bubbles.outcome-fail-audio {
+.test-results-graph circle.gutter-bubble.outcome-fail-text,
+.test-results-graph circle.gutter-bubble.outcome-fail-image,
+.test-results-graph circle.gutter-bubble.outcome-fail-audio {
     fill: rgb(178, 28, 0);
 }
 
-.test-results-graph circle.critical-bubbles.outcome-timeout {
+.test-results-graph circle.gutter-bubble.outcome-timeout {
     fill: rgb(255, 137, 0);
 }
 
-.test-results-graph circle.critical-bubbles.outcome-crash {
+.test-results-graph circle.gutter-bubble.outcome-crash {
     fill: rgb(112, 9, 159);
 }
 
-.test-results-graph circle.critical-bubbles.outcome-skip,
-.test-results-graph circle.critical-bubbles.outcome-missing,
-.test-results-graph circle.critical-bubbles.outcome-nodata {
+.test-results-graph circle.gutter-bubble.outcome-skip,
+.test-results-graph circle.gutter-bubble.outcome-missing,
+.test-results-graph circle.gutter-bubble.outcome-nodata {
     fill: rgb(200, 200, 200);
 }
 
@@ -132,3 +133,8 @@
     stroke: #fff;
     stroke-opacity: 0.8;
 }
+
+.test-results-graph circle.selection-bubble {
+    fill-opacity: 1;
+}
+
