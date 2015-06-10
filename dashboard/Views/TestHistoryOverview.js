@@ -51,8 +51,10 @@ WK.TestHistoryOverview = function(testIndex) {
     this._problemTypeFilter.addEventListener(WK.ScopeBar.Event.SelectionChanged, this._filtersChanged, this);
 
     this._filterConfigs = [
+        // FIXME: Didn't have time to port the code necessary to classify flakes, slow, etc. based
+        // on test expectations. Change the visibility CSS rule to make it show again.
+        {label: "Problem", filter: this._problemTypeFilter},
         {label: "Result", filter: this._resultTypeFilter},
-        {label: "Problem", filter: this._problemTypeFilter}
     ];
 
     function createRowForFilter(config) {

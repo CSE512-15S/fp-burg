@@ -167,12 +167,23 @@ WK.TestHistoryOverviewGrid.prototype = {
 
     _sparklineClicked: function(event)
     {
+        var eventTarget = event.target.element;
+        var enclosingRow = eventTarget.enclosingNodeOrSelfWithTagName("tr");
+        if (enclosingRow) {
+            console.log("Test selected", enclosingRow.representedTest);
+            dashboardApp.showDetailsForTest(enclosingRow.representedTest);
+        }
+
+        // FIXME: Was planning to show different view for clicking on sparkline, but
+        // ran out of time. Delete the above and uncomment this when it is implemented.
+        /*
         var sparkline = event.target;
         if (sparkline.element.enclosingNodeOrSelfWithClass("test-history-overview-grid") !== this.element)
             return;
 
         console.log("Test result selected", sparkline.representedObject);
         dashboardApp.showDetailsForTestResult(sparkline.representedObject);
+        */
     },
 
     _clickedWithinTableElement: function(event)

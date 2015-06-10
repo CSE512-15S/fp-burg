@@ -189,7 +189,7 @@ WK.DashboardViewContainer.prototype = {
         // Insert the dashboard view at the new index. This will remove any dashboard views greater than or equal to the index.
         var removedEntries = this._backForwardList.splice(newIndex, this._backForwardList.length - newIndex, provisionalEntry);
         if (newIndex > 0)
-            window.history.pushState({index: newIndex});
+            window.history.pushState({index: newIndex}, "", "");
 
         console.assert(newIndex === this._backForwardList.length - 1);
         console.assert(this._backForwardList[newIndex] === provisionalEntry);
