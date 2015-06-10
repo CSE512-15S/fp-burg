@@ -138,3 +138,24 @@
     fill-opacity: 1;
 }
 
+.popover .run-details ul {
+    list-style-type: none;
+    margin: 10px 20px;
+    padding: 0;
+}
+
+.popover .run-details li {
+    list-style-type: none;
+    text-align: center;
+}
+
+.popover .run-details li a {
+    color: rgb(92, 92, 92);
+    font-family: "HelveticaNeue-Light", Helvetica, Arial;
+    font-size: 14px;
+}
+
+.popover .run-details li a:hover {
+    color: rgba(92, 92, 92, 0.8);
+}
+

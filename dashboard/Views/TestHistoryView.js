@@ -114,20 +114,38 @@ WK.TestHistoryView.prototype = {
         var graph = event.target;
         var popover = this._popover;
         window.requestAnimationFrame(function() {
-            if (!ordinal.length && popover.visible) {
-                popover.dismiss();
+            if (ordinal !== Number.constrain(ordinal, 0, graph.representedObject.runs.length - 1))
                 return;
-            }
+            var run = graph.representedObject.runs[ordinal];
 
             var anchor = graph.element.getElementsByClassName("preview-overlay");
             if (!anchor.length)
                 return;
 
             var content = document.createElement("div");
+            content.className = "run-details";
             var ul = document.createElement("ul");
-            var li = document.createElement("li");
-            li.textContent = "r123456";
-            ul.appendChild(li);
+
+            var links = [
+                {
+                    label: "Build #" + run.buildNumber,
+                    href: "https://build.webkit.org/builders/" + encodeURIComponent(run.builder.name) + "/builds/" + run.buildNumber + "/",
+                },
+                {
+                    label: "WebKit r" + run.revisionNumber,
+                    href: "https://trac.webkit.org/r" + run.revisionNumber,
+                },
+            ];
+
+            _.each(links, function(d) {
+                var li = document.createElement("li");
+                var a = document.createElement("a");
+                a.textContent = d.label;
+                a.href = d.href;
+                li.appendChild(a);
+                ul.appendChild(li);
+            });
+
             content.appendChild(ul);
             popover.content = content;
 
