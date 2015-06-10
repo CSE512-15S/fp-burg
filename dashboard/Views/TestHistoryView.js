@@ -38,7 +38,10 @@ WK.TestHistoryView = function(test, testIndex) {
 
     this._graphs = [];
 
-    WK.TestResultHistoryGraphView.addEventListener(WK.TestResultHistoryGraphView.Event.RunSelectionChanged, this._runSelectionChanged, this);
+    this._popover = new WK.Popover();
+
+    WK.TestResultHistoryGraphView.addEventListener(WK.TestResultHistoryGraphView.Event.RunPreviewChanged, this._runPreviewChanged, this);
+    WK.TestResultHistoryGraphView.addEventListener(WK.TestResultHistoryGraphView.Event.RunClicked, this._runClicked, this);
 
     this.render();
 }
@@ -91,13 +94,45 @@ WK.TestHistoryView.prototype = {
 
     // Private
 
-    _runSelectionChanged: function(event) {
+    _runPreviewChanged: function(event) {
         if (this._graphs.indexOf(event.target) === -1)
             return;
 
         var payload = event.data;
         var ordinals = payload.ordinals;
         for (var i = 0; i < this._graphs.length; ++i)
-            this._graphs[i].selectedRuns = ordinals;
+            this._graphs[i].previewedRuns = ordinals;
+    },
+
+    _runClicked: function(event) {
+        if (this._graphs.indexOf(event.target) === -1)
+            return;
+
+        var payload = event.data;
+        var ordinal = payload.ordinal;
+
+        var graph = event.target;
+        var popover = this._popover;
+        window.requestAnimationFrame(function() {
+            if (!ordinal.length && popover.visible) {
+                popover.dismiss();
+                return;
+            }
+
+            var anchor = graph.element.getElementsByClassName("preview-overlay");
+            if (!anchor.length)
+                return;
+
+            var content = document.createElement("div");
+            var ul = document.createElement("ul");
+            var li = document.createElement("li");
+            li.textContent = "r123456";
+            ul.appendChild(li);
+            content.appendChild(ul);
+            popover.content = content;
+
+            var bounds = anchor[0].getBoundingClientRect();
+            popover.present(WK.Rect.rectFromClientRect(bounds), [WK.RectEdge.MIN_X, WK.RectEdge.MAX_X]);
+        });
     }
 };

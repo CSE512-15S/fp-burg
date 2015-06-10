@@ -115,26 +115,26 @@
     fill: rgb(200, 200, 200);
 }
 
-.test-results-graph text.selection-text {
+.test-results-graph text.preview-text {
     font-family: "HelveticaNeue-Light", Helvetica, Arial;
     font-size: 12px;
     font-weight:bold;
     fill: rgb(92, 92, 92);
 }
 
-.test-results-graph rect.selection-overlay {
+.test-results-graph rect.preview-overlay {
     fill: rgb(255, 255, 255);
     fill-opacity: 0.2;
 }
 
-.test-results-graph:hover rect.selection-overlay {
+.test-results-graph:hover rect.preview-overlay {
     fill-opacity: 0.3;
     stroke-width: 1px;
     stroke: #fff;
     stroke-opacity: 0.8;
 }
 
-.test-results-graph circle.selection-bubble {
+.test-results-graph circle.preview-bubble {
     fill-opacity: 1;
 }
 

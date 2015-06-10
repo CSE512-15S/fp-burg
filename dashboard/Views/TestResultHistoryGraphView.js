@@ -44,7 +44,8 @@ WK.TestResultHistoryGraphView = function(testResults) {
 WK.Object.addConstructorFunctions(WK.TestResultHistoryGraphView);
 
 WK.TestResultHistoryGraphView.Event = {
-    RunSelectionChanged: "graph-view-run-selection-changed"
+    RunClicked: "graph-view-run-clicked",
+    RunPreviewChanged: "graph-view-run-preview-changed"
 }
 
 WK.TestResultHistoryGraphView.prototype = {
@@ -53,14 +54,14 @@ WK.TestResultHistoryGraphView.prototype = {
 
     // Public
 
-    get selectedRuns()
+    get previewedRuns()
     {
-        return this._selectedRuns;
+        return this._previewedRuns;
     },
 
-    set selectedRuns(value)
+    set previewedRuns(value)
     {
-        if (Object.shallowEqual(this._selectedRuns, value))
+        if (Object.shallowEqual(this._previewedRuns, value))
             return;
 
         if (!(value instanceof Array))
@@ -68,7 +69,7 @@ WK.TestResultHistoryGraphView.prototype = {
 
         value = value.filter(function(d) { return d >= this._aggregates.missingResultCount; }.bind(this));
 
-        this._selectedRuns = value;
+        this._previewedRuns = value;
         this.renderSoon();
     },
 
@@ -223,7 +224,7 @@ WK.TestResultHistoryGraphView.prototype = {
 
         // Find our repeat data for this run.
         var timingData = this._aggregates.timingData;
-        var selectedRunsData = _.chain(this.selectedRuns)
+        var previewedRunsData = _.chain(this.previewedRuns)
         .map(function(runOrdinal) {
             for (var i = 0; i < timingData.length; ++i) {
                 if (missingResultCount + timingData[i].begin + timingData[i].repeat > runOrdinal) {
@@ -237,10 +238,10 @@ WK.TestResultHistoryGraphView.prototype = {
 
         function keyForRunData(run) { return run.ordinal; }
 
-        var overlay = svg.selectAll(".selection-overlay").data(selectedRunsData, keyForRunData);
+        var overlay = svg.selectAll(".preview-overlay").data(previewedRunsData, keyForRunData);
         overlay.enter()
             .append("rect")
-            .attr("class", function(d) { return "selection-overlay " + d.data.outcome; })
+            .attr("class", function(d) { return "preview-overlay " + d.data.outcome; })
             .attr("opacity", 1)
             .attr("x", function(d) { return roundX(d.ordinal); })
             .attr("y", 1 + gutterHeight + roundY(0))
@@ -251,43 +252,55 @@ WK.TestResultHistoryGraphView.prototype = {
 
         var minTextWidth = 60;
 
-        var label = svg.selectAll(".selection-text").data(selectedRunsData, keyForRunData);
+        var label = svg.selectAll(".preview-text").data(previewedRunsData, keyForRunData);
         label.enter()
             .append("text")
-            .attr("class", function(d) { return "selection-text " + d.data.outcome; })
+            .attr("class", function(d) { return "preview-text " + d.data.outcome; })
             .attr("opacity", 1)
             .attr("x", function(d) {
                 return Number.constrain(roundX(d.ordinal + 0.5), minTextWidth * 0.5, width - (minTextWidth * 0.5));
             })
-            .attr("y", 1 + gutterHeight + roundY(maxDuration) + gutterHeight)
+            .attr("y", gutterHeight + roundY(maxDuration) + gutterHeight)
             .attr("height", gutterHeight)
             .attr("text-anchor", "middle")
             .text(textLabelForRun)
         label.exit()
             .remove();
 
-        var selectedCriticalRunsData = selectedRunsData.filter(function(run) {
+        var previewedCriticalRunsData = previewedRunsData.filter(function(run) {
             return run.ordinal === run.data.begin;
         });
 
-        var selectionCircleRadius = 4;
+        var previewCircleRadius = 4;
 
-        var bubble = svg.selectAll(".selection-bubble").data(selectedCriticalRunsData, keyForRunData);
+        var bubble = svg.selectAll(".preview-bubble").data(previewedCriticalRunsData, keyForRunData);
         bubble.enter()
             .append("circle")
-            .attr("class", function(d) { return "gutter-bubble selection-bubble " + d.data.outcome; })
+            .attr("class", function(d) { return "gutter-bubble preview-bubble " + d.data.outcome; })
             .attr("cx", function(d) { return roundX(d.data.begin + 0.5); })
             .attr("cy", 1 + gutterHeight / 2)
-            .attr("r", selectionCircleRadius);
+            .attr("r", previewCircleRadius);
         bubble.exit()
             .remove();
 
         function mouseleave() {
-            widget.dispatchEventToListeners(WK.TestResultHistoryGraphView.Event.RunSelectionChanged, {ordinals: []});
+            widget.dispatchEventToListeners(WK.TestResultHistoryGraphView.Event.RunPreviewChanged, {ordinals: []});
         }
 
         svg
         .on("mouseleave", mouseleave)
+        .on("click", function() {
+            var mouseX = d3.mouse(this)[0];
+            if (mouseX < x.range()[0] || mouseX > x.range()[1])
+                return;
+
+            var runOrdinal = Math.floor(x.invert(mouseX));
+            // Don't possibly select other graph's runs if this graph has no data for this run.
+            if (runOrdinal < missingResultCount)
+                return;
+
+            widget.dispatchEventToListeners(WK.TestResultHistoryGraphView.Event.RunClicked, {ordinal: runOrdinal});
+        })
         .on("mousemove", function() {
             var mouseX = d3.mouse(this)[0];
             if (mouseX < x.range()[0] || mouseX > x.range()[1]) {
@@ -302,7 +315,7 @@ WK.TestResultHistoryGraphView.prototype = {
                 mouseleave();
                 return;
             }
-            widget.dispatchEventToListeners(WK.TestResultHistoryGraphView.Event.RunSelectionChanged, {ordinals: [runOrdinal]});
+            widget.dispatchEventToListeners(WK.TestResultHistoryGraphView.Event.RunPreviewChanged, {ordinals: [runOrdinal]});
         });
     },
 };
