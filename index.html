@@ -1,10 +1,65 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>Redirecting to test history....</title>
-	<meta http-equiv="refresh" content="0;URL=http://cse512-15s.github.io/fp-burg/dashboard/testhistory.html">
-</head>
-<body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 
+<head>
+  <title>CSE512: Data Visualization</title>
+  <meta name="robots" content="index,follow" />
+  <link rel="stylesheet" type="text/css" href="http://courses.cs.washington.edu/courses/cse512/15sp/style.css"/>
+
+</head>
+
+<body>
+  <div class='content wider'>
+
+    <div class='title'>
+      <a href="http://courses.cs.washington.edu/courses/cse512/15sp/"><strong>CSE512</strong></a>
+         Projects
+         <small>(Spring 2015)</small>
+    </div>
+    <br/>
+
+    <div class='pub' data-spy="scroll" data-target=".navbar">
+
+      <h1 class="title">WebKit Test History Dashboard</h1>
+      <div class="authors">
+        <a href="http://brrian.org">Brian Burg</a>
+      </div>
+
+      <div class="figure">
+        <img src="summary.png" width="80%"/>
+        <div class="caption">The dashboard overview showing history for multiple tests and configurations in the WebKit project.</div>
+      </div>
+
+      <p>
+Detecting and diagnosing test regressions is critical to maintaining stable, high-quality code. Speed is critical: if new changes are committed while tests are failing, then it is much harder to diagnose which test failures were caused by which changes. To find out what code change caused a regression, a developer needs to examine the test's history. However, existing test history visualizations are slow, employ poor visual encodings, and are hard to use.
+</p><p>
+This CSE 512 project investigates how better visualizations can aid in diagnosing test regressions in the context of <a href="https://webkit.org">WebKit</a>, a large open source project. We present a redesigned dashboard prototype that uses small multiples and compact visual encodings to succinctly present the recent history of multiple tests and configurations. Users can filter visible timelines according to criteria such as test name, file path, platform, expected result, or date range. Timelines are interactive, and more detailed views about the particular test or build run are shown on demand.
+</p>
+
+      <h2>Software</h2>
+      <p>
+        Try it online <a href="dashboard/testhistory.html">here</a>.
+      </p>
+
+      <h2>Materials</h2>
+      <div class="links">
+        <a href="https://github.com/CSE512-15S/fp-burg/wiki/Final-Report">Final Report</a>
+        |
+        <a href="final/poster-burg.pdf">Project Poster</a>
+        |
+        <a href="https://github.com/CSE512-15S/fp-burg/">Code</a>
+      </div>
+
+      <div class='footer'>
+        <a href='http://cs.washington.edu'>Computer Science &amp; Engineering</a> -
+        <a href='http://www.washington.edu'>University of Washington</a>
+      </div>
+    </div>
+    <br/>
+    <br/>
+
+
+  </div>
 </body>
+
 </html>
